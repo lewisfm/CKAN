@@ -37,10 +37,10 @@ jobs:
           key: nuget-oldref-modules-${{ hashFiles('**/packages.config') }}-${{ hashFiles('**/*.csproj') }}
       - name: Build ckan.exe and netkan.exe
         run: ./build.sh --configuration=${{ inputs.configuration }}
-      - name: Build CKAN.dmg
+      - name: Bundle CKAN macOS app (unsigned)
         if: inputs.configuration == 'Release'
         run: |
-          sudo apt-get install -y libplist-utils xorriso rdfind symlinks
+          sudo apt-get install -y libplist-utils rdfind symlinks
           ./build.sh osx --configuration=${{ inputs.configuration }} --exclusive
       - name: Upload repack artifact
         id: upload-repack-artifact
@@ -74,10 +74,32 @@ jobs:
           name: ckan.exe
           path: _build/repack/Release/ckan.exe
           retention-days: 7
-      - name: Upload CKAN.dmg artifact
+      - name: Upload CKAN-unsigned.tar.gz artifact
         if: inputs.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: CKAN.dmg
-          path: _build/osx/CKAN.dmg
+          name: CKAN-unsigned.tar.gz
+          path: _build/osx/CKAN-unsigned.tar.gz
+          retention-days: 1
+  codesign-osx:
+    if: inputs.configuration == 'Release'
+    runs-on: macos-15
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download unsigned artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CKAN-unsigned.tar.gz
+          path: _build/osx/
+      - name: Perform ad-hoc codesign
+        shell: zsh
+        run: |
+          cd macosx
+          make sign
+      - name: Upload signed artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CKAN.tar.gz
+          path: _build/osx/CKAN.tar.gz
           retention-days: 7

@@ -1,12 +1,16 @@
-.PHONY: clean
+.PHONY: clean tgz sign
+.DEFAULT_GOAL := tgz
 
 CONFIGURATION?=Debug
 NAME:=CKAN
 APPNAME:=$(NAME).app
 OUTDIR:=../_build/osx
-DMGROOT:=$(OUTDIR)/dmg
-APPROOT=$(DMGROOT)/$(APPNAME)
-DMG:=$(OUTDIR)/$(NAME).dmg
+TGZROOT:=$(OUTDIR)/tgz
+APPROOT=$(TGZROOT)/$(APPNAME)
+TGZ_UNSIGNED_BASENAME:=$(NAME)-unsigned.tar.gz
+TGZ_BASENAME:=$(NAME).tar.gz
+TGZ_UNSIGNED:=$(OUTDIR)/$(TGZ_UNSIGNED_BASENAME)
+TGZ:=$(OUTDIR)/$(TGZ_BASENAME)
 SCRIPTSRC:=CKAN
 SCRIPTDEST:=$(APPROOT)/Contents/MacOS/CKAN
 BUILDDIR_x86_64_SRC:=../_build/out/CKAN-CmdLine/$(CONFIGURATION)/bin/net8.0/osx-x64/publish
@@ -21,11 +25,24 @@ PLISTDEST:=$(APPROOT)/Contents/Info.plist
 CHANGELOGSRC:=../CHANGELOG.md
 VERSION:=$(shell egrep '^\s*\#\#\s+v.*$$' $(CHANGELOGSRC) | head -1 | sed -e 's/^\s*\#\#\s\+v//' )
 
-$(DMG): $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST) $(SCRIPTDEST) $(ICNSDEST) $(PLISTDEST)
+tgz: $(TGZ_UNSIGNED)
+
+clean:
+	rm -rf $(OUTDIR)
+
+sign: $(TGZ)
+
+$(TGZ):
+	tar -xzvf $(TGZ_UNSIGNED)
+	codesign -s "-" --deep --force $(APPNAME)
+	tar -czvf $(TGZ) $(APPNAME)
+	rm -rf $(APPNAME)
+
+$(TGZ_UNSIGNED): $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST) $(SCRIPTDEST) $(ICNSDEST) $(PLISTDEST)
 	rdfind -minsize 10240 -makeresultsfile false -makesymlinks true $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST)
 	symlinks -rc $(BUILDDIR_arm64_DEST)
 	mkdir -p $(OUTDIR)
-	xorrisofs -V $(NAME) -D -R -no-pad -o $@ $(DMGROOT)
+	tar -czvf $(TGZ_UNSIGNED) -C $(TGZROOT) .
 
 $(BUILDDIR_x86_64_DEST): $(BUILDDIR_x86_64_SRC)
 	mkdir -p $(shell dirname $@)
@@ -47,6 +64,3 @@ $(PLISTDEST): $(PLISTSRC) $(CHANGELOGSRC)
 	mkdir -p $(shell dirname $@)
 	sed -e 's/@VERSION@/$(VERSION)/' $< > $(PLISTTMP)
 	plistutil -i $(PLISTTMP) -o $@
-
-clean:
-	rm -rf $(OUTDIR)
