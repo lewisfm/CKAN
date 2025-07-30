@@ -93,7 +93,7 @@ jobs:
           name: CKAN-unsigned.tar.gz
           path: _build/osx/
       - name: Perform ad-hoc codesign
-        shell: zsh
+        shell: sh
         run: |
           cd macosx
           make sign
