@@ -6,6 +6,7 @@ NAME:=CKAN
 APPNAME:=$(NAME).app
 OUTDIR:=../_build/osx
 ARTIFACTROOT:=$(OUTDIR)/artifact
+ARTIFACT_TARBALL:=$(ARTIFACTROOT).tar.gz
 DMG=$(OUTDIR)/CKAN.dmg
 APPROOT=$(ARTIFACTROOT)/$(APPNAME)
 SCRIPTSRC:=CKAN
@@ -30,6 +31,8 @@ clean:
 dmg: $(DMG)
 
 $(DMG):
+	mkdir -p $(ARTIFACTROOT)
+	tar -xvzf $(ARTIFACT_TARBALL) -C $(ARTIFACTROOT)
 	codesign -s "-" --deep --force $(APPROOT)
 	create-dmg \
 		--volname "CKAN" \
@@ -45,6 +48,7 @@ $(DMG):
 $(ARTIFACTROOT): $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST) $(SCRIPTDEST) $(ICNSDEST) $(PLISTDEST)
 	rdfind -minsize 10240 -makeresultsfile false -makesymlinks true $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST)
 	symlinks -rc $(BUILDDIR_arm64_DEST)
+	tar -cvzf $(ARTIFACT_TARBALL) -C $(ARTIFACTROOT) .
 
 $(BUILDDIR_x86_64_DEST): $(BUILDDIR_x86_64_SRC)
 	mkdir -p $(shell dirname $@)
