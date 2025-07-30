@@ -74,12 +74,12 @@ jobs:
           name: ckan.exe
           path: _build/repack/Release/ckan.exe
           retention-days: 7
-      - name: Upload CKAN-unsigned.tar.gz artifact
+      - name: Upload unsigned macOS artifact
         if: inputs.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: CKAN-unsigned.tar.gz
-          path: _build/osx/CKAN-unsigned.tar.gz
+          name: CKAN-unsigned-macos
+          path: _build/osx/artifact
           retention-days: 1
   codesign-osx:
     if: inputs.configuration == 'Release'
@@ -87,19 +87,20 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-      - name: Download unsigned artifact
+      - name: Download unsigned macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: CKAN-unsigned.tar.gz
+          name: CKAN-unsigned-macos
           path: _build/osx/
       - name: Perform ad-hoc codesign
         shell: sh
         run: |
+          brew install create-dmg
           cd macosx
           make sign
-      - name: Upload signed artifact
+      - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: CKAN.tar.gz
-          path: _build/osx/CKAN.tar.gz
+          name: CKAN.dmg
+          path: _build/osx/CKAN.dmg
           retention-days: 7

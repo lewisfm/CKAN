@@ -1,16 +1,13 @@
 .PHONY: clean tgz sign
-.DEFAULT_GOAL := tgz
+.DEFAULT_GOAL := bundle
 
 CONFIGURATION?=Debug
 NAME:=CKAN
 APPNAME:=$(NAME).app
 OUTDIR:=../_build/osx
-TGZROOT:=$(OUTDIR)/tgz
-APPROOT=$(TGZROOT)/$(APPNAME)
-TGZ_UNSIGNED_BASENAME:=$(NAME)-unsigned.tar.gz
-TGZ_BASENAME:=$(NAME).tar.gz
-TGZ_UNSIGNED:=$(OUTDIR)/$(TGZ_UNSIGNED_BASENAME)
-TGZ:=$(OUTDIR)/$(TGZ_BASENAME)
+ARTIFACTROOT:=$(OUTDIR)/artifact
+DMG=$(OUTDIR)/CKAN.dmg
+APPROOT=$(ARTIFACTROOT)/$(APPNAME)
 SCRIPTSRC:=CKAN
 SCRIPTDEST:=$(APPROOT)/Contents/MacOS/CKAN
 BUILDDIR_x86_64_SRC:=../_build/out/CKAN-CmdLine/$(CONFIGURATION)/bin/net8.0/osx-x64/publish
@@ -23,26 +20,31 @@ PLISTSRC:=Info.plist.in
 PLISTTMP:=$(OUTDIR)/Info.plist
 PLISTDEST:=$(APPROOT)/Contents/Info.plist
 CHANGELOGSRC:=../CHANGELOG.md
-VERSION:=$(shell egrep '^\s*\#\#\s+v.*$$' $(CHANGELOGSRC) | head -1 | sed -e 's/^\s*\#\#\s\+v//' )
+VERSION:=$(shell egrep '^\s*\#\#\s+v.*$$' $(CHANGELOGSRC) | head -1 | sed -e 's/^\#\# //' )
 
-tgz: $(TGZ_UNSIGNED)
+bundle: $(ARTIFACTROOT)
 
 clean:
 	rm -rf $(OUTDIR)
 
-sign: $(TGZ)
+dmg: $(DMG)
 
-$(TGZ):
-	tar -xzvf $(TGZ_UNSIGNED)
-	codesign -s "-" --deep --force $(APPNAME)
-	tar -czvf $(TGZ) $(APPNAME)
-	rm -rf $(APPNAME)
+$(DMG):
+	codesign -s "-" --deep --force $(APPROOT)
+	create-dmg \
+		--volname "CKAN" \
+		--window-pos 200 120 \
+		--window-size 800 400 \
+		--icon-size 100 \
+		--icon $(APPNAME) 200 190 \
+		--hide-extension $(APPNAME) \
+		--app-drop-link 600 185 \
+		$(DMG) \
+		$(ARTIFACTROOT)
 
-$(TGZ_UNSIGNED): $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST) $(SCRIPTDEST) $(ICNSDEST) $(PLISTDEST)
+$(ARTIFACTROOT): $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST) $(SCRIPTDEST) $(ICNSDEST) $(PLISTDEST)
 	rdfind -minsize 10240 -makeresultsfile false -makesymlinks true $(BUILDDIR_x86_64_DEST) $(BUILDDIR_arm64_DEST)
 	symlinks -rc $(BUILDDIR_arm64_DEST)
-	mkdir -p $(OUTDIR)
-	tar -czvf $(TGZ_UNSIGNED) -C $(TGZROOT) .
 
 $(BUILDDIR_x86_64_DEST): $(BUILDDIR_x86_64_SRC)
 	mkdir -p $(shell dirname $@)
@@ -62,5 +64,4 @@ $(ICNSDEST): $(ICNSSRC)
 
 $(PLISTDEST): $(PLISTSRC) $(CHANGELOGSRC)
 	mkdir -p $(shell dirname $@)
-	sed -e 's/@VERSION@/$(VERSION)/' $< > $(PLISTTMP)
-	plistutil -i $(PLISTTMP) -o $@
+	sed -e 's/@VERSION@/$(VERSION)/' $< > $@
