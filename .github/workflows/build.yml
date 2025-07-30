@@ -91,7 +91,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: CKAN-unsigned-macos
-          path: _build/osx/artifact.tar.gz
+          path: _build/osx/
       - name: Perform ad-hoc codesign
         shell: sh
         run: |
