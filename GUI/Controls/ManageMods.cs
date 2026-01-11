@@ -1173,9 +1173,9 @@ namespace CKAN.GUI
                                               Properties.Resources.InstallAllCheckboxConfirmationNo)
                    is false)
             {
-                InstallAllCheckbox.CheckedChanged -= this.InstallAllCheckbox_CheckedChanged;
+                InstallAllCheckbox.CheckedChanged -= InstallAllCheckbox_CheckedChanged;
                 InstallAllCheckbox.Checked = !InstallAllCheckbox.Checked;
-                InstallAllCheckbox.CheckedChanged += this.InstallAllCheckbox_CheckedChanged;
+                InstallAllCheckbox.CheckedChanged += InstallAllCheckbox_CheckedChanged;
             }
             else
             {
