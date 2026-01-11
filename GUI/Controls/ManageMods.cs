@@ -45,7 +45,7 @@ namespace CKAN.GUI
                                             Util.Debounce<EventArgs>((sender, e) => {},
                                                                      (sender, e) => false,
                                                                      (sender, e) => false,
-                                                                     ModGrid_SelectionChanged,
+                                                                     (sender, e) => Util.Invoke(this, () => ModGrid_SelectionChanged(sender, e)),
                                                                      100));
 
             repoData = ServiceLocator.Container.Resolve<RepositoryDataManager>();
@@ -138,7 +138,7 @@ namespace CKAN.GUI
 
         private List<bool> descending => guiConfig?.MultiSortDescending ?? new List<bool>();
 
-        public event Action<GUIMod>? OnSelectedModuleChanged;
+        public event Action<GUIMod?>? OnSelectedModuleChanged;
         public event Action<List<ModChange>?, Dictionary<GUIMod, string>?>? OnChangeSetChanged;
         public event Action? OnRegistryChanged;
 
@@ -706,9 +706,9 @@ namespace CKAN.GUI
             }
 
             var module = SelectedModule;
+            OnSelectedModuleChanged?.Invoke(module);
             if (module != null)
             {
-                OnSelectedModuleChanged?.Invoke(module);
                 NavSelectMod(module);
             }
         }
