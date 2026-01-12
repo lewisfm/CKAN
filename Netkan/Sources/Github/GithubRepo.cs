@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CKAN.NetKAN.Sources.Github
 {
@@ -39,6 +40,15 @@ namespace CKAN.NetKAN.Sources.Github
 
         [JsonProperty("archived")]
         public bool Archived { get; set; }
+
+        [JsonIgnore]
+        public JObject Resources => new JObject()
+        {
+            { "repository",  HtmlUrl  },
+            { "homepage",    Homepage },
+            // issues_url ends with {/number} which makes it kind of useless
+            { "bugtracker",  HasIssues      ? $"{HtmlUrl}/issues"      : null },
+            { "discussions", HasDiscussions ? $"{HtmlUrl}/discussions" : null },
     }
 
     public class GithubLicense

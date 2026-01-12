@@ -46,12 +46,11 @@ namespace CKAN.NetKAN.Transformers
                     if (swinfo.version_check != null
                         && Uri.IsWellFormedUriString(swinfo.version_check.OriginalString, UriKind.Absolute))
                     {
-                        var resourcesJson = (JObject?)json["resources"];
-                        if (resourcesJson == null)
-                        {
-                            json["resources"] = resourcesJson = new JObject();
-                        }
-                        resourcesJson.SafeAdd("remote-swinfo", swinfo.version_check.OriginalString);
+                        json.SafeMerge("resources",
+                                       new JObject()
+                                       {
+                                           { "remote-swinfo", swinfo.version_check.OriginalString },
+                                       });
                     }
 
                     json.SafeAdd("name",     swinfo.name);
