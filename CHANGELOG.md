@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 - [Docs] Update download count image for Minkowski² (#4474 by: Clayell; reviewed: HebaruSan)
 - [Netkan] Fix `x_netkan_epoch` not applied before unreliable server check (#4477 by: HebaruSan)
-- [Netkan] Gitea kref (#4494 by: HebaruSan)
+- [Netkan] Gitea kref (#4494, #4498 by: HebaruSan)
 
 ## v1.36.2 (Politas)
 
