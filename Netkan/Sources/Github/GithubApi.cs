@@ -108,8 +108,8 @@ namespace CKAN.NetKAN.Sources.Github
         }
 
         private bool ActuallyHasWiki(GithubRef reference)
-            // If no wiki pages have been created, the /wiki route redirects and this is null
-            => _http.DownloadText(new Uri($"https://github.com/{reference.Account}/{reference.Project}/wiki")) != null;
+            // If no wiki pages have been created, the /wiki route redirects
+            => !_http.HasRedirect(new Uri($"https://github.com/{reference.Account}/{reference.Project}/wiki"));
 
         /// <summary>
         /// Download a URL via the GitHubAPI.

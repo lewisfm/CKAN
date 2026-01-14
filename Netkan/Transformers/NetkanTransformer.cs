@@ -25,7 +25,6 @@ namespace CKAN.NetKAN.Transformers
                                  IModuleService moduleService,
                                  string?        githubToken,
                                  string?        gitlabToken,
-                                 string?        userAgent,
                                  bool?          prerelease,
                                  IGame          game,
                                  IValidator     validator)
@@ -45,7 +44,7 @@ namespace CKAN.NetKAN.Transformers
                 new GitlabTransformer(glApi),
                 new GiteaTransformer(giteaAPi),
                 new SourceForgeTransformer(sfApi),
-                new HttpTransformer(http, userAgent),
+                new HttpTransformer(http),
                 new JenkinsTransformer(new JenkinsApi(http)),
                 new AvcKrefTransformer(http, ghApi),
                 new InternalCkanTransformer(http, moduleService),
