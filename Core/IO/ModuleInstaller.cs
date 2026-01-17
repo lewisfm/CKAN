@@ -64,6 +64,7 @@ namespace CKAN.IO
                                 InstalledFilesDeduplicator?     deduper       = null,
                                 string?                         userAgent     = null,
                                 IDownloader?                    downloader    = null,
+                                ISet<CkanModule>?               autoInstalled = null,
                                 bool                            ConfirmPrompt = true)
         {
             if (modules.Count == 0)
@@ -141,7 +142,8 @@ namespace CKAN.IO
                     // Re-check that there's enough free space in case game dir and cache are on same drive
                     CKANPathUtils.CheckFreeSpace(gameDir, mod.install_size,
                                                  Properties.Resources.NotEnoughSpaceToInstall);
-                    Install(mod, resolver.IsAutoInstalled(mod),
+                    Install(mod,
+                            (autoInstalled?.Contains(mod) ?? false) || resolver.IsAutoInstalled(mod),
                             registry_manager.registry,
                             deduper?.ModuleCandidateDuplicates(mod.identifier, mod.version),
                             ref possibleConfigOnlyDirs,
@@ -1173,7 +1175,7 @@ namespace CKAN.IO
                                RegistryManager                      registry_manager,
                                RelationshipResolver                 resolver,
                                IReadOnlyCollection<CkanModule>      add,
-                               IDictionary<CkanModule, bool>        autoInstalled,
+                               ISet<CkanModule>                     autoInstalled,
                                IReadOnlyCollection<InstalledModule> remove,
                                IDownloader                          downloader,
                                bool                                 enforceConsistency,
@@ -1242,7 +1244,7 @@ namespace CKAN.IO
                             // for replacing, new modules are the replacements and should not be marked auto-installed
                             remove?.FirstOrDefault(im => im.Module.identifier == mod.identifier)
                                   ?.AutoInstalled
-                                  ?? autoInstalled[mod],
+                                  ?? autoInstalled.Contains(mod),
                             registry_manager.registry,
                             deduper?.ModuleCandidateDuplicates(mod.identifier, mod.version),
                             ref possibleConfigOnlyDirs,
@@ -1277,6 +1279,7 @@ namespace CKAN.IO
                             ref HashSet<string>?               possibleConfigOnlyDirs,
                             RegistryManager                    registry_manager,
                             InstalledFilesDeduplicator?        deduper            = null,
+                            ISet<CkanModule>?                  autoInstalled      = null,
                             bool                               enforceConsistency = true,
                             bool                               ConfirmPrompt      = true)
         {
@@ -1316,7 +1319,8 @@ namespace CKAN.IO
                                                          .Select(im => im.Module)
                                                          .Except(modules))
                                          .ToArray();
-            var autoInstalled = toInstall.ToDictionary(m => m, resolver.IsAutoInstalled);
+            autoInstalled ??= new HashSet<CkanModule>();
+            autoInstalled.UnionWith(toInstall.Where(resolver.IsAutoInstalled));
 
             User.RaiseMessage(Properties.Resources.ModuleInstallerAboutToUpgrade);
             User.RaiseMessage("");
@@ -1526,7 +1530,7 @@ namespace CKAN.IO
                       registry_manager,
                       resolver,
                       resolvedModsToInstall,
-                      resolvedModsToInstall.ToDictionary(m => m, m => false),
+                      new HashSet<CkanModule>(),
                       modsToRemove,
                       downloader,
                       enforceConsistency,

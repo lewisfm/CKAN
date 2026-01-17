@@ -1608,7 +1608,7 @@ namespace Tests.Core.IO
                                       registry.LatestAvailable(ident, inst.KSP.StabilityToleranceConfig, inst.KSP.VersionCriteria()))
                                                     .OfType<CkanModule>()
                                                     .ToArray(),
-                                  downloader, ref possibleConfigOnlyDirs, regMgr, null, false);
+                                  downloader, ref possibleConfigOnlyDirs, regMgr, null, null, false);
 
                 // Assert
                 CollectionAssert.AreEquivalent(correctRemainingIdentifiers,
@@ -1706,7 +1706,7 @@ namespace Tests.Core.IO
                     installer.Upgrade(toUpgrade.Select(CkanModule.FromJson)
                                                .ToArray(),
                                       downloader, ref possibleConfigOnlyDirs,
-                                      regMgr, null, false);
+                                      regMgr, null, null, false);
                 });
                 CollectionAssert.AreEquivalent(registry.InstalledModules.Select(im => im.Module),
                                                autoInstalled.Select(CkanModule.FromJson)
