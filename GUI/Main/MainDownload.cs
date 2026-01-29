@@ -18,7 +18,7 @@ namespace CKAN.GUI
             StartDownload(gmod);
         }
 
-        public void StartDownloads(IEnumerable<GUIMod> modules)
+        private void StartDownloads(IReadOnlyCollection<GUIMod> modules)
         {
             ShowWaitDialog();
             if (downloader != null)
@@ -36,9 +36,9 @@ namespace CKAN.GUI
             }
         }
 
-        public void StartDownload(GUIMod module)
+        private void StartDownload(GUIMod module)
         {
-            StartDownloads(Enumerable.Repeat(module, 1));
+            StartDownloads(new GUIMod[] { module });
         }
 
         [ForbidGUICalls]

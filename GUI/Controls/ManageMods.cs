@@ -96,12 +96,13 @@ namespace CKAN.GUI
         private Dictionary<GUIMod, string>? conflicts;
         private bool freezeChangeSet = false;
 
-        public event Action<string>?  RaiseMessage;
-        public event Action<string>?  RaiseError;
-        public event Action<string>?  SetStatusBar;
-        public event Action?          ClearStatusBar;
-        public event Action<string>?  LaunchGame;
-        public event Action?          EditCommandLines;
+        public event Action<string>?                      RaiseMessage;
+        public event Action<string>?                      RaiseError;
+        public event Action<string>?                      SetStatusBar;
+        public event Action?                              ClearStatusBar;
+        public event Action<string>?                      LaunchGame;
+        public event Action?                              EditCommandLines;
+        public event Action<IReadOnlyCollection<GUIMod>>? DownloadModules;
 
         public ModList? MainModList
         {
@@ -1452,7 +1453,7 @@ namespace CKAN.GUI
                 && SelectedModules.Where(m => !m.Module.IsMetapackage
                                               && m.IsCached)
                                   .ToArray()
-                   is { Length: > 0 } and var modules)
+                   is { Length: > 0 } modules)
             {
                 UseWaitCursor = true;
                 var reg = RegistryManager.Instance(currentInstance, repoData).registry;
@@ -1472,9 +1473,9 @@ namespace CKAN.GUI
             if (SelectedModules.Where(m => !m.Module.IsMetapackage
                                            && !m.IsCached)
                                .ToArray()
-                is { Length: > 0 } and var modules)
+                is { Length: > 0 } modules)
             {
-                Main.Instance?.StartDownloads(modules);
+                DownloadModules?.Invoke(modules);
             }
         }
 

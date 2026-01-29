@@ -542,6 +542,7 @@ namespace CKAN.GUI
             this.ManageMods.ClearStatusBar += this.ManageMods_ClearStatusBar;
             this.ManageMods.LaunchGame += this.LaunchGame;
             this.ManageMods.EditCommandLines += this.EditCommandLines;
+            this.ManageMods.DownloadModules += this.StartDownloads;
             //
             // ChangesetTabPage
             //
