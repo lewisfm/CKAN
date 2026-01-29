@@ -66,14 +66,14 @@ namespace CKAN.GUI
                 .ToList();
             DownloadsGrid.DataSource = new BindingList<DownloadRow>(rows);
             ClientSize = new Size(ClientSize.Width,
-                ExplanationLabel.Height
-                + ExplanationLabel.Padding.Vertical
-                + DownloadsGrid.ColumnHeadersHeight
-                + (DownloadsGrid.RowCount
-                    * DownloadsGrid.RowTemplate.Height)
-                + DownloadsGrid.Margin.Vertical
-                + DownloadsGrid.Padding.Vertical
-                + BottomButtonPanel.Height);
+                                  ExplanationLabel.Height
+                                  + ExplanationLabel.Padding.Vertical
+                                  + DownloadsGrid.ColumnHeadersHeight
+                                  + DownloadsGrid.Rows.OfType<DataGridViewRow>()
+                                                      .Sum(r => r.Height)
+                                  + DownloadsGrid.Margin.Vertical
+                                  + DownloadsGrid.Padding.Vertical
+                                  + BottomButtonPanel.Height);
         }
 
         [ForbidGUICalls]

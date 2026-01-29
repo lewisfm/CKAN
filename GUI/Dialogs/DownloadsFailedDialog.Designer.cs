@@ -57,6 +57,7 @@ namespace CKAN.GUI
             //
             this.DownloadsGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DownloadsGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DownloadsGrid.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.DownloadsGrid.AllowUserToAddRows = false;
             this.DownloadsGrid.AllowUserToDeleteRows = false;
             this.DownloadsGrid.AllowUserToResizeRows = false;
@@ -112,8 +113,7 @@ namespace CKAN.GUI
             this.ModColumn.DataPropertyName = "Data";
             this.ModColumn.ReadOnly = true;
             this.ModColumn.Width = 250;
-            this.ModColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ModColumn.FillWeight = 250;
+            this.ModColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             resources.ApplyResources(this.ModColumn, "ModColumn");
             //
             // ErrorColumn
@@ -124,6 +124,7 @@ namespace CKAN.GUI
             this.ErrorColumn.Width = 500;
             this.ErrorColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.ErrorColumn.FillWeight = 500;
+            this.ErrorColumn.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             resources.ApplyResources(this.ErrorColumn, "ErrorColumn");
             //
             // BottomButtonPanel
