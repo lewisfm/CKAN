@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CKAN.GUI.Attributes;
+using CKAN.Extensions;
 
 namespace CKAN.GUI
 {
@@ -59,7 +60,8 @@ namespace CKAN.GUI
                 {
                     try
                     {
-                        downloader.DownloadModules(modules.Select(m => m.Module));
+                        downloader.DownloadModules(modules.Where(m => !m.IsCached)
+                                                          .Select(m => m.Module));
                         done = true;
                     }
                     catch (ModuleDownloadErrorsKraken k)
@@ -72,7 +74,11 @@ namespace CKAN.GUI
                                 Properties.Resources.ModDownloadsFailedColHdr,
                                 Properties.Resources.ModDownloadsFailedAbortBtnNotInstalling,
                                 k.Exceptions.Select(kvp => new KeyValuePair<object[], Exception>(
-                                    modules.Select(m => m.Module).ToArray(), kvp.Value)),
+                                    modules.Select(m => m.Module)
+                                           .Where(m => (m.download ?? Enumerable.Empty<Uri>())
+                                                           .IntersectsWith(kvp.Key?.download ?? Enumerable.Empty<Uri>()))
+                                           .ToArray(),
+                                    kvp.Value)),
                                 (m1, m2) => (m1 as CkanModule)?.download == (m2 as CkanModule)?.download);
                              dfd.ShowDialog(this);
                         });

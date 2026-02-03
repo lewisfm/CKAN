@@ -14,6 +14,7 @@ using Autofac;
 using CKAN.IO;
 using CKAN.GUI.Attributes;
 using CKAN.Configuration;
+using CKAN.Extensions;
 
 // Don't warn if we use our own obsolete properties
 #pragma warning disable 0618
@@ -286,7 +287,9 @@ namespace CKAN.GUI
                                     Properties.Resources.ModDownloadsFailedColHdr,
                                     Properties.Resources.ModDownloadsFailedAbortBtn,
                                     k.Exceptions.Select(kvp => new KeyValuePair<object[], Exception>(
-                                        fullChangeset.Where(m => m.download == kvp.Key.download).ToArray(),
+                                        fullChangeset.Where(m => (m.download ?? Enumerable.Empty<Uri>())
+                                                                     .IntersectsWith(kvp.Key.download ?? Enumerable.Empty<Uri>()))
+                                                     .ToArray(),
                                         kvp.Value)),
                                     (m1, m2) => (m1 as CkanModule)?.download == (m2 as CkanModule)?.download);
                                  dfd.ShowDialog(this);
