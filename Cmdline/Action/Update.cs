@@ -49,22 +49,22 @@ namespace CKAN.CmdLine
                     }
                     var repos = (options.repositoryURLs ?? Enumerable.Empty<string>())
                                         .Select((url, i) =>
-                                            new Repository(string.Format(Properties.Resources.UpdateURLRepoName,
+                                            new RepositoryDto(string.Format(Properties.Resources.UpdateURLRepoName,
                                                                          i + 1),
                                                            getUri(url)))
-                                        .DefaultIfEmpty(Repository.DefaultGameRepo(game))
+                                        .DefaultIfEmpty(RepositoryDto.DefaultGameRepo(game))
                                         .ToArray();
                     if (options.list_changes)
                     {
                         var availablePrior = repoData.GetAllAvailableModules(repos)
                                                      .Select(am => am.Latest(ReleaseStatus.stable))
-                                                     .OfType<CkanModule>()
+                                                     .OfType<ReleaseDto>()
                                                      .ToList();
                         UpdateRepositories(game, repos, options.NetUserAgent, options.force);
                         PrintChanges(availablePrior,
                                      repoData.GetAllAvailableModules(repos)
                                              .Select(am => am.Latest(ReleaseStatus.stable))
-                                             .OfType<CkanModule>()
+                                             .OfType<ReleaseDto>()
                                              .ToList());
                     }
                     else
@@ -106,14 +106,14 @@ namespace CKAN.CmdLine
         /// </summary>
         /// <param name="modules_prior">List of the compatible modules prior to the update.</param>
         /// <param name="modules_post">List of the compatible modules after the update.</param>
-        private void PrintChanges(List<CkanModule> modules_prior,
-                                  List<CkanModule> modules_post)
+        private void PrintChanges(List<ReleaseDto> modules_prior,
+                                  List<ReleaseDto> modules_post)
         {
-            var prior = new HashSet<CkanModule>(modules_prior, new NameComparer());
-            var post  = new HashSet<CkanModule>(modules_post,  new NameComparer());
+            var prior = new HashSet<ReleaseDto>(modules_prior, new NameComparer());
+            var post  = new HashSet<ReleaseDto>(modules_post,  new NameComparer());
 
-            var added   = new HashSet<CkanModule>(post.Except(prior, new NameComparer()));
-            var removed = new HashSet<CkanModule>(prior.Except(post, new NameComparer()));
+            var added   = new HashSet<ReleaseDto>(post.Except(prior, new NameComparer()));
+            var removed = new HashSet<ReleaseDto>(prior.Except(post, new NameComparer()));
 
             // Default compare includes versions
             var unchanged = post.Intersect(prior);
@@ -147,7 +147,7 @@ namespace CKAN.CmdLine
         /// </summary>
         /// <param name="message">The message to print.</param>
         /// <param name="modules">The modules to list.</param>
-        private void PrintModules(string message, IEnumerable<CkanModule> modules)
+        private void PrintModules(string message, IEnumerable<ReleaseDto> modules)
         {
             // Check input.
             if (message == null)
@@ -162,7 +162,7 @@ namespace CKAN.CmdLine
 
             user.RaiseMessage("{0}", message);
 
-            foreach (CkanModule module in modules.OrderBy(m => m.name))
+            foreach (ReleaseDto module in modules.OrderBy(m => m.name))
             {
                 user.RaiseMessage("{0} ({1})", module.name, module.identifier);
             }
@@ -195,7 +195,7 @@ namespace CKAN.CmdLine
         /// </summary>
         /// <param name="game">The game for which the URLs contain metadata</param>
         /// <param name="repos">Repositories to update</param>
-        private void UpdateRepositories(IGame game, Repository[] repos, string? userAgent, bool force = false)
+        private void UpdateRepositories(IGame game, RepositoryDto[] repos, string? userAgent, bool force = false)
         {
             var result = repoData.Update(repos, game, force,
                                          new NetAsyncDownloader(user, () => null, userAgent),

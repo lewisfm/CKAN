@@ -2,7 +2,7 @@ namespace CKAN
 {
     public class Relationship
     {
-        public Relationship(CkanModule             source,
+        public Relationship(ReleaseDto             source,
                             RelationshipType       type,
                             RelationshipDescriptor descr)
         {
@@ -11,7 +11,7 @@ namespace CKAN
             Descriptor = descr;
         }
 
-        public readonly CkanModule             Source;
+        public readonly ReleaseDto             Source;
         public readonly RelationshipType       Type;
         public readonly RelationshipDescriptor Descriptor;
     }

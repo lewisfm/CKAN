@@ -26,7 +26,7 @@ namespace Tests.CmdLine
             using (var repo     = new TemporaryRepository(TestData.DogeCoinPlugin()))
             using (var repoData = new TemporaryRepositoryData(new NullUser(), repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             using (var zipDir   = new TemporaryDirectory())
             {
                 ICommand sut  = new Import(manager, repoData.Manager, user);
@@ -100,7 +100,7 @@ namespace Tests.CmdLine
             using (var repo     = new TemporaryRepository())
             using (var repoData = new TemporaryRepositoryData(user, repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 ICommand sut  = new Import(manager, repoData.Manager, user);
                 var      opts = new ImportOptions();

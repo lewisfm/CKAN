@@ -27,7 +27,7 @@ namespace CKAN.NetKAN.Services
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(ModuleService));
 
-        public AvcVersion? GetInternalAvc(CkanModule module, string zipFilePath, string? internalFilePath = null)
+        public AvcVersion? GetInternalAvc(ReleaseDto module, string zipFilePath, string? internalFilePath = null)
         {
             using (var zipfile = new ZipFile(zipFilePath))
             {
@@ -44,7 +44,7 @@ namespace CKAN.NetKAN.Services
         /// <param name="zipPath">Where the ZIP file is</param>
         /// <param name="inst">Game instance for generating InstallableFiles</param>
         /// <returns>Parsed contents of the file, or null if none found</returns>
-        public JObject? GetInternalCkan(CkanModule module, string zipPath)
+        public JObject? GetInternalCkan(ReleaseDto module, string zipPath)
             => GetInternalCkan(module, new ZipFile(zipPath), game);
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace CKAN.NetKAN.Services
         /// <param name="zip">The ZipFile to search</param>
         /// <param name="inst">Game instance for generating InstallableFiles</param>
         /// <returns>Parsed contents of the file, or null if none found</returns>
-        private static JObject? GetInternalCkan(CkanModule module, ZipFile zip, IGame game)
+        private static JObject? GetInternalCkan(ReleaseDto module, ZipFile zip, IGame game)
             => (module.install != null
                     // Find embedded .ckan files that would be included in the install
                     ? GetFilesBySuffix(module, zip, ".ckan", game)
@@ -68,45 +68,45 @@ namespace CKAN.NetKAN.Services
                                     zip.GetInputStream(entry)))
                 .FirstOrDefault();
 
-        public bool HasInstallableFiles(CkanModule module, string filePath)
+        public bool HasInstallableFiles(ReleaseDto module, string filePath)
             => Utilities.DefaultIfThrows(() =>
                    ModuleInstaller.FindInstallableFiles(module, filePath, game).ToArray())
                            != null;
 
-        public IEnumerable<InstallableFile> GetConfigFiles(CkanModule module, ZipFile zip)
+        public IEnumerable<InstallableFile> GetConfigFiles(ReleaseDto module, ZipFile zip)
             => GetFilesBySuffix(module, zip, ".cfg", game);
 
-        public IEnumerable<InstallableFile> GetPlugins(CkanModule module, ZipFile zip)
+        public IEnumerable<InstallableFile> GetPlugins(ReleaseDto module, ZipFile zip)
             => GetFilesBySuffix(module, zip, ".dll", game);
 
-        public IEnumerable<InstallableFile> GetCrafts(CkanModule module, ZipFile zip)
+        public IEnumerable<InstallableFile> GetCrafts(ReleaseDto module, ZipFile zip)
             => GetFilesBySuffix(module, zip, ".craft", game);
 
-        private static IEnumerable<InstallableFile> GetFilesBySuffix(CkanModule   module,
+        private static IEnumerable<InstallableFile> GetFilesBySuffix(ReleaseDto   module,
                                                                      ZipFile      zip,
                                                                      string       suffix,
                                                                      IGame        game)
             => ModuleInstaller.FindInstallableFiles(module, zip, game)
                               .Where(instF => instF.destination.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase));
 
-        public IEnumerable<InstallableFile> GetSourceCode(CkanModule module, ZipFile zip)
+        public IEnumerable<InstallableFile> GetSourceCode(ReleaseDto module, ZipFile zip)
             => GetFilesBySuffixes(module, zip, sourceCodeSuffixes, game);
 
         private static readonly string[] sourceCodeSuffixes = new string[] { ".cs", ".csproj", ".sln" };
 
-        private static IEnumerable<InstallableFile> GetFilesBySuffixes(CkanModule                  module,
+        private static IEnumerable<InstallableFile> GetFilesBySuffixes(ReleaseDto                  module,
                                                                        ZipFile                     zip,
                                                                        IReadOnlyCollection<string> suffixes,
                                                                        IGame                       game)
             => ModuleInstaller.FindInstallableFiles(module, zip, game)
                               .Where(instF => suffixes.Any(suffix => instF.destination.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)));
 
-        public IEnumerable<ZipEntry> FileSources(CkanModule module, ZipFile zip)
+        public IEnumerable<ZipEntry> FileSources(ReleaseDto module, ZipFile zip)
             => ModuleInstaller.FindInstallableFiles(module, zip, game)
                               .Select(instF => instF.source)
                               .Where(ze => !ze.IsDirectory);
 
-        public IEnumerable<string> FileDestinations(CkanModule module, string filePath)
+        public IEnumerable<string> FileDestinations(ReleaseDto module, string filePath)
             => ModuleInstaller.FindInstallableFiles(module, filePath, game)
                               .Where(f => !f.source.IsDirectory)
                               .Select(f => f.destination);
@@ -138,7 +138,7 @@ namespace CKAN.NetKAN.Services
         /// Tuple consisting of the chosen file's entry in the archive plus a boolean
         /// indicating whether it's a file would be extracted to disk at installation
         /// </returns>
-        public Tuple<ZipEntry, bool>? FindInternalAvc(CkanModule module,
+        public Tuple<ZipEntry, bool>? FindInternalAvc(ReleaseDto module,
                                                       ZipFile    zipfile,
                                                       string?    internalFilePath)
         {
@@ -229,7 +229,7 @@ namespace CKAN.NetKAN.Services
             }
         }
 
-        public IEnumerable<string> GetInternalSpaceWarpInfos(CkanModule module,
+        public IEnumerable<string> GetInternalSpaceWarpInfos(ReleaseDto module,
                                                              ZipFile    zip,
                                                              string?    internalFilePath = null)
             => (internalFilePath is { Length: > 0 }

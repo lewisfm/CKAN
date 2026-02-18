@@ -18,7 +18,7 @@ namespace CKAN.CmdLine
         {
             AvailableOptions opts = (AvailableOptions)raw_options;
 
-            IEnumerable<CkanModule> compatible = RegistryManager
+            IEnumerable<ReleaseDto> compatible = RegistryManager
                 .Instance(instance, repoData)
                 .registry
                 .CompatibleModules(instance.StabilityToleranceConfig,
@@ -41,7 +41,7 @@ namespace CKAN.CmdLine
 
             if (opts.detail)
             {
-                foreach (CkanModule module in compatible)
+                foreach (ReleaseDto module in compatible)
                 {
                     user.RaiseMessage("* {0} ({1}) - {2} - {3}",
                                       module.identifier, module.version,
@@ -50,7 +50,7 @@ namespace CKAN.CmdLine
             }
             else
             {
-                foreach (CkanModule module in compatible)
+                foreach (ReleaseDto module in compatible)
                 {
                     user.RaiseMessage("* {0} ({1}) - {2}",
                                       module.identifier, module.version,

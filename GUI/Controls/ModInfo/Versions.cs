@@ -81,7 +81,7 @@ namespace CKAN.GUI
         private void VersionsListView_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (!ignoreItemCheck && e.CurrentValue != e.NewValue && visibleGuiModule != null
-                && VersionsListView.Items[e.Index].Tag is CkanModule module)
+                && VersionsListView.Items[e.Index].Tag is ReleaseDto module)
             {
                 switch (e.NewValue)
                 {
@@ -116,7 +116,7 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        private static bool installable(CkanModule       module,
+        private static bool installable(ReleaseDto       module,
                                         IRegistryQuerier registry,
                                         ReleaseStatus    stabilityTolerance)
             => currentInstance != null
@@ -126,17 +126,17 @@ namespace CKAN.GUI
                                currentInstance.VersionCriteria());
 
         [ForbidGUICalls]
-        private static bool installable(CkanModule          module,
+        private static bool installable(ReleaseDto          module,
                                         IRegistryQuerier    registry,
                                         IGame               game,
                                         GameVersionCriteria crit)
             => module.IsCompatible(crit)
                && currentInstance != null
-               && ModuleInstaller.CanInstall(new List<CkanModule>() { module },
+               && ModuleInstaller.CanInstall(new List<ReleaseDto>() { module },
                                              RelationshipResolverOptions.DependsOnlyOpts(currentInstance.StabilityToleranceConfig),
                                              registry, game, crit);
 
-        private bool allowInstall(CkanModule module)
+        private bool allowInstall(ReleaseDto module)
         {
             if (currentInstance == null || manager?.Cache == null || user == null)
             {
@@ -179,26 +179,26 @@ namespace CKAN.GUI
                 ignoreItemCheck = true;
                 foreach (var item in VersionsListView.Items.OfType<ListViewItem>())
                 {
-                    var module = item.Tag as CkanModule;
+                    var module = item.Tag as ReleaseDto;
                     item.Checked = module?.Equals(visibleGuiModule.SelectedMod) ?? false;
                 }
                 ignoreItemCheck = prevIgnore;
             }
         }
 
-        private static IEnumerable<CkanModule> getVersions(GUIMod           gmod,
+        private static IEnumerable<ReleaseDto> getVersions(GUIMod           gmod,
                                                            IRegistryQuerier registry)
             => (Utilities.DefaultIfThrows(() => registry.AvailableByIdentifier(gmod.Identifier))
                 // Identifier unknown to registry, maybe installed from local .ckan
-                ?? Enumerable.Empty<CkanModule>())
+                ?? Enumerable.Empty<ReleaseDto>())
                    // Take the module associated with GUIMod, if any, and append it to the list...
                    .Append(gmod.InstalledMod?.Module)
-                   .OfType<CkanModule>()
+                   .OfType<ReleaseDto>()
                    // ... if it's not already there
                    .Distinct();
 
         private ListViewItem[] getItems(GUIMod                          gmod,
-                                        IReadOnlyCollection<CkanModule> versions,
+                                        IReadOnlyCollection<ReleaseDto> versions,
                                         IRegistryQuerier                registry)
         {
             if (currentInstance != null)
@@ -210,8 +210,8 @@ namespace CKAN.GUI
                 var items = versions.OrderByDescending(module => module.version)
                     .Select(module =>
                 {
-                    CkanModule.GetMinMaxVersions(
-                        new List<CkanModule>() {module},
+                    ReleaseDto.GetMinMaxVersions(
+                        new List<ReleaseDto>() {module},
                         out ModuleVersion? minMod, out ModuleVersion? maxMod,
                         out GameVersion? minKsp,   out GameVersion? maxKsp);
                     ListViewItem toRet = new ListViewItem(new string[]
@@ -272,10 +272,10 @@ namespace CKAN.GUI
                            // Abort when they switch to another mod
                            .WithCancellation(cancelTokenSrc.Token)
                            // Check the important ones first
-                           .OrderBy(item => (item.Tag as CkanModule) != visibleGuiModule.InstalledMod?.Module
-                                            && (item.Tag as CkanModule) != visibleGuiModule.SelectedMod)
+                           .OrderBy(item => (item.Tag as ReleaseDto) != visibleGuiModule.InstalledMod?.Module
+                                            && (item.Tag as ReleaseDto) != visibleGuiModule.SelectedMod)
                            // Slow step to be performed across multiple cores
-                           .Where(item => item.Tag is CkanModule m
+                           .Where(item => item.Tag is ReleaseDto m
                                           && installable(m, registry, stabilityTolerance))
                            // Jump back to GUI thread for the updates for each compatible item
                            .ForAll(item => Util.Invoke(this, () =>

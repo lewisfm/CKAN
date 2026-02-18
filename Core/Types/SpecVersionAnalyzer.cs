@@ -9,7 +9,7 @@ namespace CKAN
 {
     public static class SpecVersionAnalyzer
     {
-        public static ModuleVersion MinimumSpecVersion(CkanModule module)
+        public static ModuleVersion MinimumSpecVersion(ReleaseDto module)
             => MinimumSpecVersion(JObject.FromObject(module));
 
         public static ModuleVersion MinimumSpecVersion(JObject json)

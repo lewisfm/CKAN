@@ -72,7 +72,7 @@ namespace Tests.Core.Registry
                                                                     repo2.repo))
             {
                 var versCrit  = new GameVersionCriteria(GameVersion.Parse("1.12.5"));
-                var repos     = new Repository[] { repo1.repo, repo2.repo };
+                var repos     = new RepositoryDto[] { repo1.repo, repo2.repo };
                 var providers = repoData.Manager
                                         .GetAllAvailableModules(repos)
                                         .ToGroupedDictionary(am => am.AllAvailable()

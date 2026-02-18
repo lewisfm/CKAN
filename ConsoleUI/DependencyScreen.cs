@@ -32,7 +32,7 @@ namespace CKAN.ConsoleUI {
                                 Registry            reg,
                                 string?             userAgent,
                                 ChangePlan          cp,
-                                HashSet<CkanModule> rej,
+                                HashSet<ReleaseDto> rej,
                                 bool                dbg)
             : base(theme)
         {
@@ -71,7 +71,7 @@ namespace CKAN.ConsoleUI {
             dependencyList.AddTip("+", Properties.Resources.Toggle);
             dependencyList.AddBinding(Keys.Plus, sender =>
             {
-                if (dependencyList.Selection?.module is CkanModule mod
+                if (dependencyList.Selection?.module is ReleaseDto mod
                     && (accepted.Contains(mod)
                         || TryWithoutConflicts(accepted.Append(mod), instance, reg))) {
                     ChangePlan.toggleContains(accepted, mod);
@@ -150,7 +150,7 @@ namespace CKAN.ConsoleUI {
         /// </summary>
         public bool HaveOptions() => dependencies.Count > 0;
 
-        private void generateList(IEnumerable<CkanModule> userInstalling,
+        private void generateList(IEnumerable<ReleaseDto> userInstalling,
                                   GameInstance            instance,
                                   Registry                registry)
         {
@@ -168,18 +168,18 @@ namespace CKAN.ConsoleUI {
             rejected.UnionWith(inst);
 
             if (ModuleInstaller.FindRecommendations(
-                    instance, inst, inst, Array.Empty<CkanModule>(), rejected, registry,
-                    out Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-                    out Dictionary<CkanModule, List<string>> suggestions,
-                    out Dictionary<CkanModule, HashSet<string>> supporters
+                    instance, inst, inst, Array.Empty<ReleaseDto>(), rejected, registry,
+                    out Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+                    out Dictionary<ReleaseDto, List<string>> suggestions,
+                    out Dictionary<ReleaseDto, HashSet<string>> supporters
             )) {
-                foreach ((CkanModule mod, Tuple<bool, List<string>> checkedAndDependents) in recommendations) {
+                foreach ((ReleaseDto mod, Tuple<bool, List<string>> checkedAndDependents) in recommendations) {
                     dependencies.Add(mod, new Dependency(mod, checkedAndDependents.Item2.Order()));
                 }
-                foreach ((CkanModule mod, List<string> dependents) in suggestions) {
+                foreach ((ReleaseDto mod, List<string> dependents) in suggestions) {
                     dependencies.Add(mod, new Dependency(mod, dependents.Order()));
                 }
-                foreach ((CkanModule mod, HashSet<string> dependents) in supporters) {
+                foreach ((ReleaseDto mod, HashSet<string> dependents) in supporters) {
                     dependencies.Add(mod, new Dependency(mod, dependents.Order()));
                 }
                 // Check the default checkboxes
@@ -188,7 +188,7 @@ namespace CKAN.ConsoleUI {
             }
         }
 
-        private IEnumerable<CkanModule> ReplacementModules(IEnumerable<string> replaced_identifiers,
+        private IEnumerable<ReleaseDto> ReplacementModules(IEnumerable<string> replaced_identifiers,
                                                            GameInstance        instance,
                                                            Registry            registry)
             => replaced_identifiers.Select(replaced => registry.GetReplacement(
@@ -198,11 +198,11 @@ namespace CKAN.ConsoleUI {
                                    .OfType<ModuleReplacement>()
                                    .Select(repl => repl.ReplaceWith);
 
-        private string StatusSymbol(CkanModule mod)
+        private string StatusSymbol(ReleaseDto mod)
             => accepted.Contains(mod) ? installing
                                       : notinstalled;
 
-        private bool TryWithoutConflicts(IEnumerable<CkanModule> toAdd,
+        private bool TryWithoutConflicts(IEnumerable<ReleaseDto> toAdd,
                                          GameInstance            instance,
                                          Registry                registry)
         {
@@ -214,7 +214,7 @@ namespace CKAN.ConsoleUI {
             return true;
         }
 
-        private bool HasConflicts(IEnumerable<CkanModule>               toAdd,
+        private bool HasConflicts(IEnumerable<ReleaseDto>               toAdd,
                                   GameInstance                          instance,
                                   Registry                              registry,
                                   [NotNullWhen(true)] out List<string>? descriptions)
@@ -224,7 +224,7 @@ namespace CKAN.ConsoleUI {
                 var resolver = new RelationshipResolver(
                     plan.Install.Concat(toAdd).Distinct(),
                     plan.Remove.Select(ident => registry.InstalledModule(ident)?.Module)
-                               .OfType<CkanModule>(),
+                               .OfType<ReleaseDto>(),
                     RelationshipResolverOptions.ConflictsOpts(instance.StabilityToleranceConfig),
                     registry, instance.Game, instance.VersionCriteria());
                 descriptions = resolver.ConflictDescriptions.ToList();
@@ -237,12 +237,12 @@ namespace CKAN.ConsoleUI {
             }
         }
 
-        private readonly HashSet<CkanModule> accepted = new HashSet<CkanModule>();
-        private readonly HashSet<CkanModule> rejected;
+        private readonly HashSet<ReleaseDto> accepted = new HashSet<ReleaseDto>();
+        private readonly HashSet<ReleaseDto> rejected;
 
         private readonly ChangePlan plan;
 
-        private readonly Dictionary<CkanModule, Dependency> dependencies = new Dictionary<CkanModule, Dependency>();
+        private readonly Dictionary<ReleaseDto, Dependency> dependencies = new Dictionary<ReleaseDto, Dependency>();
         private readonly ConsoleListBox<Dependency>         dependencyList;
 
         private const string notinstalled = " ";
@@ -259,7 +259,7 @@ namespace CKAN.ConsoleUI {
         /// </summary>
         /// <param name="m">The mod</param>
         /// <param name="d">Mods that recommend or suggest m</param>
-        public Dependency(CkanModule m, IEnumerable<string> d)
+        public Dependency(ReleaseDto m, IEnumerable<string> d)
         {
             module     = m;
             dependents = d.ToArray();
@@ -268,7 +268,7 @@ namespace CKAN.ConsoleUI {
         /// <summary>
         /// The mod
         /// </summary>
-        public readonly CkanModule module;
+        public readonly ReleaseDto module;
 
         /// <summary>
         /// Mods that recommend or suggest this mod

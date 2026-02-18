@@ -52,7 +52,7 @@ namespace CKAN.CmdLine
                 else if (manager.Cache != null)
                 {
                     log.InfoFormat("Importing {0} files", toImport.Count);
-                    var toInstall = new List<CkanModule>();
+                    var toInstall = new List<ReleaseDto>();
                     var installer = new ModuleInstaller(instance, manager.Cache,
                                                         manager.Configuration, user);
                     var regMgr    = RegistryManager.Instance(instance, repoData);

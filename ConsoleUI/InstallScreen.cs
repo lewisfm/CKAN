@@ -50,12 +50,12 @@ namespace CKAN.ConsoleUI {
         /// <param name="process">Framework parameter not used by this object</param>
         public override void Run(Action? process = null)
         {
-            var rejected = new HashSet<CkanModule>();
+            var rejected = new HashSet<ReleaseDto>();
             DrawBackground();
             if (manager.CurrentInstance != null && manager.Cache != null)
             {
                 using (TransactionScope trans = CkanTransaction.CreateTransactionScope()) {
-                    var autoInstalled = new HashSet<CkanModule>();
+                    var autoInstalled = new HashSet<ReleaseDto>();
                     bool retry = false;
                     do {
                         Draw();
@@ -93,7 +93,7 @@ namespace CKAN.ConsoleUI {
                                                                        ServiceLocator.Container.Resolve<IConfiguration>(),
                                                                        this);
                             if (plan.Remove.Count > 0) {
-                                inst.UninstallList(plan.Remove, ref possibleConfigOnlyDirs, regMgr, true, new List<CkanModule>(plan.Install));
+                                inst.UninstallList(plan.Remove, ref possibleConfigOnlyDirs, regMgr, true, new List<ReleaseDto>(plan.Install));
                                 plan.Remove.Clear();
                             }
                             NetAsyncModulesDownloader dl = new NetAsyncModulesDownloader(this, manager.Cache, userAgent);
@@ -137,7 +137,7 @@ namespace CKAN.ConsoleUI {
 
                         } catch (TooManyModsProvideKraken ex) {
 
-                            var ch = new ConsoleChoiceDialog<CkanModule>(
+                            var ch = new ConsoleChoiceDialog<ReleaseDto>(
                                 theme,
                                 ex.Message,
                                 Properties.Resources.InstallTooManyModsNameHeader,

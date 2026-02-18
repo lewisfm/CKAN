@@ -16,7 +16,7 @@ namespace CKAN.ConsoleUI {
         /// </summary>
         /// <param name="theme">The visual theme to use to draw the dialog</param>
         /// <param name="gameInst">Game instance to import into</param>
-        public static CkanModule[] ChooseCkanFiles(ConsoleTheme theme,
+        public static ReleaseDto[] ChooseCkanFiles(ConsoleTheme theme,
                                                    GameInstance gameInst)
         {
             var cfmsd = new ConsoleFileMultiSelectDialog(
@@ -27,7 +27,7 @@ namespace CKAN.ConsoleUI {
                 Properties.Resources.CkanFileSelectHeader,
                 Properties.Resources.CkanFileSelectHeader);
             return cfmsd.Run()
-                        .Select(f => CkanModule.FromFile(f.FullName))
+                        .Select(f => ReleaseDto.FromFile(f.FullName))
                         .ToArray();
         }
 

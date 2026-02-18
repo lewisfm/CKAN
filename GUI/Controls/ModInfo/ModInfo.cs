@@ -57,7 +57,7 @@ namespace CKAN.GUI
 
         public event Action<GUIMod>?            OnDownloadClick;
         public event Action<SavedSearch, bool>? OnChangeFilter;
-        public event Action<CkanModule>?        ModuleDoubleClicked;
+        public event Action<ReleaseDto>?        ModuleDoubleClicked;
         public event Action<ModuleTag>?         ShowHideTag;
         public event Action<ModuleLabel>?       AddRemoveModuleLabel;
 
@@ -166,7 +166,7 @@ namespace CKAN.GUI
 
         private static ModuleLabelList ModuleLabels => ModuleLabelList.ModuleLabels;
 
-        private void UpdateTagsAndLabels(CkanModule mod)
+        private void UpdateTagsAndLabels(ReleaseDto mod)
         {
             if (manager?.CurrentInstance is GameInstance inst)
             {

@@ -204,7 +204,7 @@ namespace Tests.GUI
                 var search1  = ModSearch.Parse(labels, inst.KSP, "is:replaceable")!;
                 var search2  = ModSearch.Parse(labels, inst.KSP, "not:replaceable")!;
                 registry.SetDlls(new Dictionary<string, string> { { "ReplacedMod", "" } });
-                var mod1 = new GUIMod(CkanModule.FromJson(
+                var mod1 = new GUIMod(ReleaseDto.FromJson(
                                           @"{
                                               ""spec_version"": 1,
                                               ""identifier"":   ""ReplacedMod"",
@@ -217,7 +217,7 @@ namespace Tests.GUI
                                       inst.KSP.StabilityToleranceConfig,
                                       inst.KSP, cache,
                                       null, false, false);
-                var mod2 = new GUIMod(CkanModule.FromJson(
+                var mod2 = new GUIMod(ReleaseDto.FromJson(
                                           @"{
                                               ""spec_version"": 1,
                                               ""identifier"":   ""NotReplacedMod"",

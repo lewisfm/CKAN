@@ -11,7 +11,7 @@ using CKAN.Versioning;
 
 namespace CKAN
 {
-    using modRelList = List<Tuple<CkanModule, RelationshipDescriptor, CkanModule?>>;
+    using modRelList = List<Tuple<ReleaseDto, RelationshipDescriptor, ReleaseDto?>>;
 
     /// <summary>
     /// Our application exceptions are called Krakens.
@@ -59,8 +59,8 @@ namespace CKAN
                                     long          bytesToStore)
             : base(string.Format(Properties.Resources.KrakenNotEnoughSpace,
                                  description, destination,
-                                 CkanModule.FmtSize(bytesFree),
-                                 CkanModule.FmtSize(bytesToStore)))
+                                 ReleaseDto.FmtSize(bytesFree),
+                                 ReleaseDto.FmtSize(bytesToStore)))
         {
             this.destination  = destination;
             this.bytesFree    = bytesFree;
@@ -199,7 +199,7 @@ namespace CKAN
     /// </summary>
     public class BadMetadataKraken : Kraken
     {
-        public BadMetadataKraken(CkanModule? module,
+        public BadMetadataKraken(ReleaseDto? module,
                                  string?     reason         = null,
                                  Exception?  innerException = null)
             : base(reason,
@@ -213,7 +213,7 @@ namespace CKAN
                                            module, base.Message)
                            : base.Message;
 
-        public CkanModule? module;
+        public ReleaseDto? module;
     }
 
     /// <summary>
@@ -233,9 +233,9 @@ namespace CKAN
 
     public class TooManyModsProvideKraken : Kraken
     {
-        public TooManyModsProvideKraken(CkanModule                requester,
+        public TooManyModsProvideKraken(ReleaseDto                requester,
                                         string                    requested,
-                                        IReadOnlyList<CkanModule> modules,
+                                        IReadOnlyList<ReleaseDto> modules,
                                         string?                   choice_help_text = null,
                                         Exception?                innerException   = null)
             : base(choice_help_text
@@ -249,8 +249,8 @@ namespace CKAN
             this.choice_help_text = choice_help_text;
         }
 
-        public readonly CkanModule                requester;
-        public readonly IReadOnlyList<CkanModule> modules;
+        public readonly ReleaseDto                requester;
+        public readonly IReadOnlyList<ReleaseDto> modules;
         public readonly string                    requested;
         public readonly string?                   choice_help_text;
     }
@@ -302,7 +302,7 @@ namespace CKAN
     /// </summary>
     public class BadRelationshipsKraken : InconsistentKraken
     {
-        public BadRelationshipsKraken(List<Tuple<CkanModule, RelationshipDescriptor>> depends,
+        public BadRelationshipsKraken(List<Tuple<ReleaseDto, RelationshipDescriptor>> depends,
                                       modRelList                                      conflicts)
             : base((depends?.Select(dep => string.Format(Properties.Resources.KrakenMissingDependency,
                                                          dep.Item1, dep.Item2))
@@ -312,11 +312,11 @@ namespace CKAN
                                         ?? Array.Empty<string>())
                        .ToArray())
         {
-            Depends   = depends   ?? new List<Tuple<CkanModule, RelationshipDescriptor>>();
+            Depends   = depends   ?? new List<Tuple<ReleaseDto, RelationshipDescriptor>>();
             Conflicts = conflicts ?? new modRelList();
         }
 
-        public readonly List<Tuple<CkanModule, RelationshipDescriptor>> Depends;
+        public readonly List<Tuple<ReleaseDto, RelationshipDescriptor>> Depends;
         public readonly modRelList                                      Conflicts;
     }
 
@@ -347,7 +347,7 @@ namespace CKAN
 
         // These aren't set at construction time, but exist so that we can decorate the
         // kraken as appropriate.
-        public CkanModule?      installingModule;
+        public ReleaseDto?      installingModule;
         public InstalledModule? owningModule;
     }
 
@@ -390,7 +390,7 @@ namespace CKAN
     /// </summary>
     public class ModuleDownloadErrorsKraken : Kraken
     {
-        public ModuleDownloadErrorsKraken(List<KeyValuePair<CkanModule, Exception>> errors)
+        public ModuleDownloadErrorsKraken(List<KeyValuePair<ReleaseDto, Exception>> errors)
             : base(string.Join(Environment.NewLine,
                                errors.Select(kvp => string.Format(Properties.Resources.KrakenModuleDownloadError,
                                                                   kvp.Key,
@@ -398,10 +398,10 @@ namespace CKAN
                                      .Prepend("")
                                      .Prepend(Properties.Resources.KrakenModuleDownloadErrorsHeader)))
         {
-            Exceptions = new List<KeyValuePair<CkanModule, Exception>>(errors);
+            Exceptions = new List<KeyValuePair<ReleaseDto, Exception>>(errors);
         }
 
-        public readonly List<KeyValuePair<CkanModule, Exception>> Exceptions;
+        public readonly List<KeyValuePair<ReleaseDto, Exception>> Exceptions;
     }
 
     /// <summary>
@@ -599,7 +599,7 @@ namespace CKAN
         /// <param name="module">Module to check against path</param>
         /// <param name="path">Path to the file to check against module</param>
         /// <param name="reason">Human-readable description of the problem</param>
-        public InvalidModuleFileKraken(CkanModule module,
+        public InvalidModuleFileKraken(ReleaseDto module,
                                        string     path,
                                        string?    reason = null)
             : base(reason)
@@ -611,7 +611,7 @@ namespace CKAN
         /// <summary>
         /// The module that doesn't match the file
         /// </summary>
-        public readonly CkanModule module;
+        public readonly ReleaseDto module;
 
         /// <summary>
         /// Path to the file that doesn't match the module
@@ -665,7 +665,7 @@ namespace CKAN
 
     public class ModuleIsDLCKraken : Kraken
     {
-        public ModuleIsDLCKraken(CkanModule module,
+        public ModuleIsDLCKraken(ReleaseDto module,
                                  string?    reason = null)
             : base(reason
                    ?? (new Uri?[] {
@@ -689,7 +689,7 @@ namespace CKAN
         /// <summary>
         /// The DLC module that can't be operated upon
         /// </summary>
-        public readonly CkanModule module;
+        public readonly ReleaseDto module;
     }
 
     /// <summary>
@@ -733,13 +733,13 @@ namespace CKAN
     public class InvalidModuleAttributesKraken : Kraken
     {
         public InvalidModuleAttributesKraken(string      why,
-                                             CkanModule? module = null)
+                                             ReleaseDto? module = null)
             : base(string.Format("[InvalidModuleAttributesKraken] {0} in {1}",
                                  why, module?.identifier ?? "unknown"))
         {
             this.module = module;
         }
 
-        public readonly CkanModule? module;
+        public readonly ReleaseDto? module;
     }
 }

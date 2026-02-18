@@ -89,7 +89,7 @@ namespace Tests.Core.Types
                 zip.Add(new ZipEntry("ExampleShips/AwesomeShip.craft") { Size = 0, CompressedSize = 0 });
                 zip.CommitUpdate();
 
-                var mod = CkanModule.FromJson(string.Format(
+                var mod = ReleaseDto.FromJson(string.Format(
                     @"{{
                         ""spec_version"": 1,
                         ""identifier"": ""AwesomeMod"",
@@ -139,7 +139,7 @@ namespace Tests.Core.Types
                 zip.Add(new ZipEntry("saves/scenarios/AwesomeRace/persistent.sfs") { Size = 0, CompressedSize = 0 });
                 zip.CommitUpdate();
 
-                var mod = CkanModule.FromJson(@"
+                var mod = ReleaseDto.FromJson(@"
                     {
                         ""spec_version"": ""v1.14"",
                         ""identifier"": ""AwesomeMod"",

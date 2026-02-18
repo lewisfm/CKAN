@@ -52,12 +52,12 @@ namespace CKAN
 
         public abstract class RelationshipReason : SelectionReason, IEquatable<RelationshipReason>
         {
-            public RelationshipReason(CkanModule parent)
+            public RelationshipReason(ReleaseDto parent)
             {
                 Parent = parent;
             }
 
-            public CkanModule Parent;
+            public ReleaseDto Parent;
 
             public bool Equals(RelationshipReason? rsn)
                 => GetType() == rsn?.GetType()
@@ -83,7 +83,7 @@ namespace CKAN
 
         public class Replacement : RelationshipReason
         {
-            public Replacement(CkanModule module)
+            public Replacement(ReleaseDto module)
                 : base(module)
             {
             }
@@ -103,7 +103,7 @@ namespace CKAN
 
         public sealed class Suggested : RelationshipReason
         {
-            public Suggested(CkanModule module)
+            public Suggested(ReleaseDto module)
                 : base(module)
             {
             }
@@ -115,7 +115,7 @@ namespace CKAN
 
         public sealed class Depends : RelationshipReason
         {
-            public Depends(CkanModule module)
+            public Depends(ReleaseDto module)
                 : base(module)
             {
             }
@@ -135,7 +135,7 @@ namespace CKAN
 
         public sealed class Recommended : RelationshipReason
         {
-            public Recommended(CkanModule module, int providesIndex)
+            public Recommended(ReleaseDto module, int providesIndex)
                 : base(module)
             {
                 ProvidesIndex = providesIndex;

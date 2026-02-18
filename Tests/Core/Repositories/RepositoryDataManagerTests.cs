@@ -18,7 +18,7 @@ namespace Tests.Core.Repositories
         {
             // Arrange
             var user     = new NullUser();
-            var testRepo = new Repository("testRepo", TestData.TestKANTarGz());
+            var testRepo = new RepositoryDto("testRepo", TestData.TestKANTarGz());
             using (var repoData = new TemporaryRepositoryData(user, testRepo))
             {
                 var crit = new GameVersionCriteria(GameVersion.Parse("0.25.0"));
@@ -40,7 +40,7 @@ namespace Tests.Core.Repositories
         {
             // Arrange
             var user     = new NullUser();
-            var testRepo = new Repository("testRepo", TestData.TestKANZip());
+            var testRepo = new RepositoryDto("testRepo", TestData.TestKANZip());
             using (var repoData = new TemporaryRepositoryData(user, testRepo))
             {
                 var crit = new GameVersionCriteria(GameVersion.Parse("0.25.0"));
@@ -63,7 +63,7 @@ namespace Tests.Core.Repositories
             Assert.DoesNotThrow(delegate
             {
                 var user = new NullUser();
-                var badRepo = new Repository("badRepo", TestData.BadKANTarGz());
+                var badRepo = new RepositoryDto("badRepo", TestData.BadKANTarGz());
                 using (var repoData = new TemporaryRepositoryData(user, badRepo))
                 {
                 }
@@ -76,7 +76,7 @@ namespace Tests.Core.Repositories
             Assert.DoesNotThrow(delegate
             {
                 var user = new NullUser();
-                var badRepo = new Repository("badRepo", TestData.BadKANZip());
+                var badRepo = new RepositoryDto("badRepo", TestData.BadKANZip());
                 using (var repoData = new TemporaryRepositoryData(user, badRepo))
                 {
                 }
@@ -89,7 +89,7 @@ namespace Tests.Core.Repositories
             // Arrange
             var game  = new Mock<IGame>();
             var user  = new NullUser();
-            var repos = new Repository[] { new Repository("TestRepo", TestData.TestKANTarGz()) };
+            var repos = new RepositoryDto[] { new RepositoryDto("TestRepo", TestData.TestKANTarGz()) };
             using (var reposDir = new TemporaryDirectory())
             {
                 var prev  = new RepositoryDataManager(reposDir);

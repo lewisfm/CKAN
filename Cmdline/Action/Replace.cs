@@ -25,7 +25,7 @@ namespace CKAN.CmdLine
 
             if (options.ckan_file != null)
             {
-                options.modules?.Add(CkanModule.FromFile(options.ckan_file).identifier);
+                options.modules?.Add(ReleaseDto.FromFile(options.ckan_file).identifier);
             }
 
             if (options.modules is not { Count: > 0 } && !options.replace_all)

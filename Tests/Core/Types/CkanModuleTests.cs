@@ -16,7 +16,7 @@ namespace Tests.Core.Types
         [Test]
         public void CompatibleWith()
         {
-            CkanModule module = CkanModule.FromJson(TestData.kOS_014());
+            ReleaseDto module = ReleaseDto.FromJson(TestData.kOS_014());
 
             Assert.IsTrue(module.IsCompatible(new GameVersionCriteria(GameVersion.Parse("0.24.2"))));
         }
@@ -24,17 +24,17 @@ namespace Tests.Core.Types
         [Test]
         public void StandardName()
         {
-            CkanModule module = CkanModule.FromJson(TestData.kOS_014());
+            ReleaseDto module = ReleaseDto.FromJson(TestData.kOS_014());
             Assert.AreEqual("kOS-0.14.zip", module.StandardName());
 
-            CkanModule module2 = CkanModule.FromJson(TestData.kOS_014_with_invalid_version_characters());
+            ReleaseDto module2 = ReleaseDto.FromJson(TestData.kOS_014_with_invalid_version_characters());
             Assert.AreEqual("kOS-0-14-0.zip", module2.StandardName());
         }
 
         [Test]
         public void MetaData()
         {
-            CkanModule module = CkanModule.FromJson(TestData.kOS_014());
+            ReleaseDto module = ReleaseDto.FromJson(TestData.kOS_014());
 
             Assert.AreEqual("kOS - Kerbal OS", module.name);
             Assert.AreEqual("kOS", module.identifier);
@@ -65,14 +65,14 @@ namespace Tests.Core.Types
         [Test]
         public void SpacesPreservedInDownload()
         {
-            CkanModule module = CkanModule.FromJson(TestData.DogeCoinFlag_101());
+            ReleaseDto module = ReleaseDto.FromJson(TestData.DogeCoinFlag_101());
             Assert.AreEqual("https://kerbalstuff.com/mod/269/Dogecoin%20Flag/download/1.01", module.download?[0].OriginalString);
         }
 
         [Test]
         public void FilterRead()
         {
-            CkanModule module = CkanModule.FromJson(TestData.DogeCoinFlag_101());
+            ReleaseDto module = ReleaseDto.FromJson(TestData.DogeCoinFlag_101());
 
             // Assert known things about this mod.
             Assert.IsNotNull(module.install?[0].filter);
@@ -111,12 +111,12 @@ namespace Tests.Core.Types
         public void IsSpecSupported()
         {
             // We should always support old versions, and the classic '1' version.
-            Assert.IsTrue(CkanModule.IsSpecSupported(new ModuleVersion("1")));
-            Assert.IsTrue(CkanModule.IsSpecSupported(new ModuleVersion("v0.02")));
+            Assert.IsTrue(ReleaseDto.IsSpecSupported(new ModuleVersion("1")));
+            Assert.IsTrue(ReleaseDto.IsSpecSupported(new ModuleVersion("v0.02")));
 
             // We shouldn't support this far-in-the-future version.
             // NB: V2K bug!!!
-            Assert.IsFalse(CkanModule.IsSpecSupported(new ModuleVersion("v2000.99.99")));
+            Assert.IsFalse(ReleaseDto.IsSpecSupported(new ModuleVersion("v2000.99.99")));
         }
 
         [Test]
@@ -124,8 +124,8 @@ namespace Tests.Core.Types
         {
             // We should support both two and three number dotted specs, on both
             // tagged and dev releases.
-            Assert.IsTrue(CkanModule.IsSpecSupported(new ModuleVersion("v1.1")));
-            Assert.IsTrue(CkanModule.IsSpecSupported(new ModuleVersion("v1.0.2")));
+            Assert.IsTrue(ReleaseDto.IsSpecSupported(new ModuleVersion("v1.1")));
+            Assert.IsTrue(ReleaseDto.IsSpecSupported(new ModuleVersion("v1.0.2")));
         }
 
         [Test]
@@ -134,14 +134,14 @@ namespace Tests.Core.Types
             // Modules from the future are unsupported.
             Assert.Throws<UnsupportedKraken>(delegate
             {
-                CkanModule.FromJson(TestData.FutureMetaData());
+                ReleaseDto.FromJson(TestData.FutureMetaData());
             });
         }
 
         [Test]
         public void multilicense_986()
         {
-            CkanModule mod = CkanModule.FromJson(TestData.kOS_014_multilicense());
+            ReleaseDto mod = ReleaseDto.FromJson(TestData.kOS_014_multilicense());
 
             Assert.AreEqual(2, mod.license.Count, "Dual-license");
             Assert.AreEqual("GPL-3.0", mod.license[0].ToString());
@@ -151,7 +151,7 @@ namespace Tests.Core.Types
         [Test]
         public void unilicense_986()
         {
-            CkanModule mod = TestData.kOS_014_module();
+            ReleaseDto mod = TestData.kOS_014_module();
 
             Assert.AreEqual(1, mod.license.Count, "Uni-license");
             Assert.AreEqual("GPL-3.0", mod.license[0].ToString());
@@ -165,7 +165,7 @@ namespace Tests.Core.Types
             // Guess which string totally isn't a valid Url? This one.
             metadata["resources"]!["homepage"] = "https://included%in%the%download";
 
-            CkanModule mod = CkanModule.FromJson(metadata.ToString());
+            ReleaseDto mod = ReleaseDto.FromJson(metadata.ToString());
 
             Assert.IsNotNull(mod);
             Assert.IsNull(mod.resources?.homepage);
@@ -174,7 +174,7 @@ namespace Tests.Core.Types
         [Test]
         public void good_resource_1208()
         {
-            CkanModule mod = CkanModule.FromJson(TestData.kOS_014());
+            ReleaseDto mod = ReleaseDto.FromJson(TestData.kOS_014());
 
             Assert.AreEqual(
                 "http://forum.kerbalspaceprogram.com/threads/68089-0-23-kOS-Scriptable-Autopilot-System-v0-11-2-13",
@@ -186,7 +186,7 @@ namespace Tests.Core.Types
         public void InternetArchiveDownload_RedistributableLicense_CorrectURL()
         {
             // Arrange
-            CkanModule module = TestData.kOS_014_module();
+            ReleaseDto module = TestData.kOS_014_module();
             // Act
             var uri = module.InternetArchiveDownload;
             // Assert
@@ -198,7 +198,7 @@ namespace Tests.Core.Types
         public void InternetArchiveDownload_RestrictedLicense_NullURL()
         {
             // Arrange
-            CkanModule module = TestData.FireSpitterModule();
+            ReleaseDto module = TestData.FireSpitterModule();
             // Act
             var uri = module.InternetArchiveDownload;
             // Assert
@@ -209,7 +209,7 @@ namespace Tests.Core.Types
         public void InternetArchiveDownload_EpochVersion_CorrectURL()
         {
             // Arrange
-            CkanModule module = TestData.kOS_014_epoch_module();
+            ReleaseDto module = TestData.kOS_014_epoch_module();
             // Act
             var uri = module.InternetArchiveDownload;
             // Assert
@@ -221,7 +221,7 @@ namespace Tests.Core.Types
         public void InternetArchiveDownload_NoHash_NullURL()
         {
             // Arrange
-            CkanModule module = TestData.RandSCapsuleDyneModule();
+            ReleaseDto module = TestData.RandSCapsuleDyneModule();
             // Act
             var uri = module.InternetArchiveDownload;
             // Assert
@@ -330,14 +330,14 @@ namespace Tests.Core.Types
         public void GroupByDownloads_WithModules_GroupsBySharedURLs(string[] moduleJsons, params string[][] correctGroups)
         {
             // Arrange
-            var modules = moduleJsons.Select(CkanModule.FromJson)
+            var modules = moduleJsons.Select(ReleaseDto.FromJson)
                                      .ToArray();
             // Turn [null] into [] as Workaround for params argument not allowing no values
             // (params argument itself is a workaround for TestCase not allowing string[][])
             correctGroups = correctGroups.Where(g => g != null).ToArray();
 
             // Act
-            var result = CkanModule.GroupByDownloads(modules);
+            var result = ReleaseDto.GroupByDownloads(modules);
             var groupIdentifiers = result.Select(grp => grp.OrderBy(m => m.identifier)
                                                            .Select(m => m.identifier)
                                                            .ToArray())
@@ -447,7 +447,7 @@ namespace Tests.Core.Types
                                                                        string   correct)
         {
             // Arrange
-            var module         = CkanModule.FromJson(moduleJson);
+            var module         = ReleaseDto.FromJson(moduleJson);
             var correctVersion = GameVersion.Parse(correct);
             var realVersions   = real.Select(GameVersion.Parse).ToList();
 
@@ -544,14 +544,14 @@ namespace Tests.Core.Types
                                                                       string correctMaxGame)
         {
             // Arrange
-            var modules           = moduleJsons.Select(CkanModule.FromJson).ToList();
+            var modules           = moduleJsons.Select(ReleaseDto.FromJson).ToList();
             var correctMinModVer  = correctMinMod  != null ? new ModuleVersion(correctMinMod)  : null;
             var correctMaxModVer  = correctMaxMod  != null ? new ModuleVersion(correctMaxMod)  : null;
             var correctMinGameVer = correctMinGame != null ? GameVersion.Parse(correctMinGame) : null;
             var correctMaxGameVer = correctMaxGame != null ? GameVersion.Parse(correctMaxGame) : null;
 
             // Act
-            CkanModule.GetMinMaxVersions(modules,
+            ReleaseDto.GetMinMaxVersions(modules,
                                          out ModuleVersion? minMod,
                                          out ModuleVersion? maxMod,
                                          out GameVersion?   minGame,

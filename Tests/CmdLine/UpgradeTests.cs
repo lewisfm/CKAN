@@ -72,7 +72,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var fromModule = regMgr.registry.GetModuleByVersion(identifier, fromVersion)!;
@@ -93,7 +93,7 @@ namespace Tests.CmdLine
                 {
                     CollectionAssert.AreEqual(Enumerable.Empty<string>(),
                                               user.RaisedErrors);
-                    CollectionAssert.AreEqual(new CkanModule[] { toModule },
+                    CollectionAssert.AreEqual(new ReleaseDto[] { toModule },
                                               regMgr.registry.InstalledModules.Select(m => m.Module));
                 });
             }
@@ -611,12 +611,12 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
 
                 // Register installed mods
-                var instMods = instModules.Select(CkanModule.FromJson)
+                var instMods = instModules.Select(ReleaseDto.FromJson)
                                           .ToArray();
                 foreach (var fromModule in instMods)
                 {
@@ -625,7 +625,7 @@ namespace Tests.CmdLine
                                                    inst.KSP, false);
                 }
                 // Pre-store mods that might be installed
-                foreach (var toModule in addlModules.Select(CkanModule.FromJson))
+                foreach (var toModule in addlModules.Select(ReleaseDto.FromJson))
                 {
                     manager.Cache?.Store(toModule, TestData.DogeCoinFlagZip(), null);
                 }
@@ -681,7 +681,7 @@ namespace Tests.CmdLine
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr = RegistryManager.Instance(gameInstWrapper.KSP,
                                                          repoData.Manager,
-                                                         new Repository[] { repo.repo }))
+                                                         new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(gameInstWrapper.KSP);
                 foreach (var m in repoData.Manager.GetAllAvailableModules(Enumerable.Repeat(repo.repo, 1))

@@ -134,16 +134,16 @@ namespace Tests.CmdLine
         public string[]? GetSuggestions_WithInputs_Works(string text)
         {
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
-            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<Repository, RepositoryData>
+            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<RepositoryDto, RepositoryData>
             {
                 { repo, RepositoryData.FromJson(TestData.TestRepository(), null)! },
             }))
             using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                         new Repository[] { repo }))
+                                                         new RepositoryDto[] { repo }))
             {
                 // Arrange
                 regMgr.registry.RepositoriesAdd(repo);

@@ -70,7 +70,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var module = regMgr.registry.GetModuleByVersion(identifier, version)!;
@@ -86,7 +86,7 @@ namespace Tests.CmdLine
 
                 // Assert
                 CollectionAssert.IsEmpty(user.RaisedErrors);
-                CollectionAssert.AreEqual(new CkanModule[] { module },
+                CollectionAssert.AreEqual(new ReleaseDto[] { module },
                                           regMgr.registry.InstalledModules.Select(m => m.Module));
             }
         }
@@ -102,7 +102,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 manager.Cache?.Store(TestData.ModuleManagerModule(),
@@ -118,7 +118,7 @@ namespace Tests.CmdLine
 
                 // Assert
                 CollectionAssert.IsEmpty(user.RaisedErrors);
-                CollectionAssert.AreEqual(new CkanModule[] { TestData.ModuleManagerModule() },
+                CollectionAssert.AreEqual(new ReleaseDto[] { TestData.ModuleManagerModule() },
                                           regMgr.registry.InstalledModules.Select(m => m.Module));
             }
         }
@@ -134,7 +134,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var opts = new InstallOptions()
@@ -213,7 +213,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var opts = new InstallOptions()

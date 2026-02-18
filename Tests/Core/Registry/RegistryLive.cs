@@ -21,14 +21,14 @@ namespace Tests.Core.Registry
         public void LatestAvailable()
         {
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var temp_ksp = new DisposableKSP())
-            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<Repository, RepositoryData>
+            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<RepositoryDto, RepositoryData>
             {
                 { repo, RepositoryData.FromJson(TestData.TestRepository(), null)! },
             }))
             using (var regMgr = RegistryManager.Instance(temp_ksp.KSP, repoData.Manager,
-                                                         new Repository[] { repo }))
+                                                         new RepositoryDto[] { repo }))
             {
                 var registry = regMgr.registry;
                 var module = registry.LatestAvailable("AGExt", new StabilityToleranceConfig(""),

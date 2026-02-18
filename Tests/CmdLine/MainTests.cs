@@ -44,7 +44,7 @@ namespace Tests.CmdLine
             using (var repo     = new TemporaryRepository())
             using (var repoData = new TemporaryRepositoryData(user, repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 var dll = new FileInfo(Path.Combine(inst.KSP.Game.PrimaryModDirectory(inst.KSP),
                                                     "ModuleManager.1.2.3.dll"));

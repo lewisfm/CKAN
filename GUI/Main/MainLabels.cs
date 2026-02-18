@@ -51,7 +51,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void LabelsAfterInstall(CkanModule mod)
+        private void LabelsAfterInstall(ReleaseDto mod)
         {
             if (CurrentInstance != null)
             {

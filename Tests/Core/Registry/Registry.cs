@@ -80,7 +80,7 @@ namespace Tests.Core.Registry
                 var DLCDepender = registry.GetModuleByVersion("DLC-Depender", "1.0.0");
 
                 // Act
-                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<CkanModule?>().ToList();
+                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<ReleaseDto?>().ToList();
 
                 // Assert
                 Assert.IsFalse(avail.Contains(DLCDepender));
@@ -112,7 +112,7 @@ namespace Tests.Core.Registry
                 var DLCDepender = registry.GetModuleByVersion("DLC-Depender", "1.0.0");
 
                 // Act
-                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<CkanModule?>().ToList();
+                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<ReleaseDto?>().ToList();
 
                 // Assert
                 Assert.IsTrue(avail.Contains(DLCDepender));
@@ -145,7 +145,7 @@ namespace Tests.Core.Registry
                 var DLCDepender = registry.GetModuleByVersion("DLC-Depender", "1.0.0");
 
                 // Act
-                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<CkanModule?>().ToList();
+                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<ReleaseDto?>().ToList();
 
                 // Assert
                 Assert.IsTrue(avail.Contains(DLCDepender));
@@ -178,7 +178,7 @@ namespace Tests.Core.Registry
                 var DLCDepender = registry.GetModuleByVersion("DLC-Depender", "1.0.0");
 
                 // Act
-                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<CkanModule?>().ToList();
+                var avail = registry.CompatibleModules(stabilityTolerance, v0_24_2).OfType<ReleaseDto?>().ToList();
 
                 // Assert
                 Assert.IsFalse(avail.Contains(DLCDepender));
@@ -194,7 +194,7 @@ namespace Tests.Core.Registry
             using (var repoData = new TemporaryRepositoryData(new NullUser(), repo.repo))
             {
                 using (var manager = RegistryManager.Instance(instance.KSP, repoData.Manager,
-                                                              new Repository[] { repo.repo }))
+                                                              new RepositoryDto[] { repo.repo }))
                 {
                     // Act
                     manager.registry.SetDlcs(new Dictionary<string, UnmanagedModuleVersion>()
@@ -205,7 +205,7 @@ namespace Tests.Core.Registry
                     manager.Save();
                 }
                 using (var manager = RegistryManager.Instance(instance.KSP, repoData.Manager,
-                                                              new Repository[] { repo.repo }))
+                                                              new RepositoryDto[] { repo.repo }))
                 {
                     // Assert
                     CollectionAssert.IsSupersetOf(manager.registry.InstalledDlc.Keys,
@@ -256,7 +256,7 @@ namespace Tests.Core.Registry
 
                 // Act
                 GameVersionCriteria v173 = new GameVersionCriteria(GameVersion.Parse("1.7.3"));
-                var compat = registry.CompatibleModules(stabilityTolerance, v173).OfType<CkanModule?>().ToList();
+                var compat = registry.CompatibleModules(stabilityTolerance, v173).OfType<ReleaseDto?>().ToList();
 
                 // Assert
                 Assert.IsFalse(compat.Contains(modFor161));
@@ -460,7 +460,7 @@ namespace Tests.Core.Registry
                 var autoInstDep = registry.InstalledModule(kopt.identifier)!;
                 var installed   = new InstalledModule[] { registry.InstalledModule(chosen.identifier)!,
                                                           registry.InstalledModule(kopt.identifier)!, };
-                var installing  = Array.Empty<CkanModule>();
+                var installing  = Array.Empty<ReleaseDto>();
 
                 // Act
                 var removable = registry.FindRemovableAutoInstalled(
@@ -494,7 +494,7 @@ namespace Tests.Core.Registry
                 var instMfi    = registry.RegisterModule(mfi,    Array.Empty<string>(), gameInstWrapper.KSP, true);
                 var instMM     = registry.RegisterModule(mm,     Array.Empty<string>(), gameInstWrapper.KSP, true);
                 var installed  = new InstalledModule[] { instChosen, instKop, instMfi, instMM, };
-                var installing = Array.Empty<CkanModule>();
+                var installing = Array.Empty<ReleaseDto>();
 
                 // Act
                 var removable = registry.FindRemovableAutoInstalled(
@@ -530,7 +530,7 @@ namespace Tests.Core.Registry
                                                            gameInstWrapper.KSP, true);
                 var autoInstDeps = new InstalledModule[] { instKopt, };
                 var installed    = new InstalledModule[] { instKopt, instMM, };
-                var installing   = new CkanModule[] { secondChosen };
+                var installing   = new ReleaseDto[] { secondChosen };
 
                 // Act
                 var removable = registry.FindRemovableAutoInstalled(
@@ -550,10 +550,10 @@ namespace Tests.Core.Registry
         {
             // Arrange
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -562,7 +562,7 @@ namespace Tests.Core.Registry
                                       }))
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             {
                 var registry = regMgr.registry;
 
@@ -641,7 +641,7 @@ namespace Tests.Core.Registry
             // Our registry should work when we initialise it inside our Tx and commit.
             // This one seemingly just makes sure adding a mod adds it
             // when the registry is created inside the transaction
-            var module = CkanModule.FromJson(@"{
+            var module = ReleaseDto.FromJson(@"{
                              ""spec_version"": ""v1.4"",
                              ""identifier"":   ""InstalledMod"",
                              ""author"":       ""InstalledModder"",
@@ -679,7 +679,7 @@ namespace Tests.Core.Registry
                 // Our registry should work fine on committed transactions.
                 // This one seemingly just makes sure adding a mod adds it
                 // when the registry is created outside the transaction
-                var module = CkanModule.FromJson(@"{
+                var module = ReleaseDto.FromJson(@"{
                                  ""spec_version"": ""v1.4"",
                                  ""identifier"":   ""InstalledMod"",
                                  ""author"":       ""InstalledModder"",
@@ -719,7 +719,7 @@ namespace Tests.Core.Registry
                 using (var gameInstWrapper = new DisposableKSP())
                 using (var tScope = new TransactionScope())
                 {
-                    var module = CkanModule.FromJson(@"{
+                    var module = ReleaseDto.FromJson(@"{
                                      ""spec_version"": ""v1.4"",
                                      ""identifier"":   ""InstalledMod"",
                                      ""author"":       ""InstalledModder"",
@@ -738,7 +738,7 @@ namespace Tests.Core.Registry
                 }
 
                 CollectionAssert.AreEqual(
-                    Enumerable.Empty<CkanModule>(),
+                    Enumerable.Empty<ReleaseDto>(),
                     registry.InstalledModules.Select(im => im.Module));
             }
         }
@@ -758,7 +758,7 @@ namespace Tests.Core.Registry
                 using (var gameInstWrapper = new DisposableKSP())
                 using (var tScope = new TransactionScope())
                 {
-                    var module = CkanModule.FromJson(@"{
+                    var module = ReleaseDto.FromJson(@"{
                                      ""spec_version"": ""v1.4"",
                                      ""identifier"":   ""InstalledMod"",
                                      ""author"":       ""InstalledModder"",
@@ -772,7 +772,7 @@ namespace Tests.Core.Registry
                     {
                         Assert.Throws<TransactionalKraken>(delegate
                         {
-                            var module2 = CkanModule.FromJson(@"{
+                            var module2 = ReleaseDto.FromJson(@"{
                                               ""spec_version"": ""v1.4"",
                                               ""identifier"":   ""InstalledMod2"",
                                               ""author"":       ""InstalledModder"",
@@ -802,7 +802,7 @@ namespace Tests.Core.Registry
                 using (var gameInstWrapper = new DisposableKSP())
                 using (var tScope = new TransactionScope())
                 {
-                    var module = CkanModule.FromJson(@"{
+                    var module = ReleaseDto.FromJson(@"{
                                      ""spec_version"": ""v1.4"",
                                      ""identifier"":   ""InstalledMod"",
                                      ""author"":       ""InstalledModder"",
@@ -816,7 +816,7 @@ namespace Tests.Core.Registry
                     {
                         Assert.DoesNotThrow(delegate
                         {
-                            var module2 = CkanModule.FromJson(@"{
+                            var module2 = ReleaseDto.FromJson(@"{
                                               ""spec_version"": ""v1.4"",
                                               ""identifier"":   ""InstalledMod2"",
                                               ""author"":       ""InstalledModder"",

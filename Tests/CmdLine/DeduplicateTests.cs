@@ -41,16 +41,16 @@ namespace Tests.CmdLine
             using (var repo     = new TemporaryRepository())
             using (var repoData = new TemporaryRepositoryData(new NullUser(), repo.repo))
             using (var regMgr1  = RegistryManager.Instance(inst1.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             using (var regMgr2  = RegistryManager.Instance(inst2.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 var installer1 = new ModuleInstaller(inst1.KSP, manager.Cache!, config, new NullUser());
                 var installer2 = new ModuleInstaller(inst2.KSP, manager.Cache!, config, new NullUser());
                 HashSet<string>? possibleConfigOnlyDirs1 = null;
                 HashSet<string>? possibleConfigOnlyDirs2 = null;
                 var opts = RelationshipResolverOptions.DependsOnlyOpts(inst1.KSP.StabilityToleranceConfig);
-                var modules = new List<CkanModule> { TestData.MissionModule() };
+                var modules = new List<ReleaseDto> { TestData.MissionModule() };
                 manager.Cache!.Store(TestData.MissionModule(),
                                      TestData.MissionZip(), null);
                 var sut = new Deduplicate(manager, repoData.Manager, user);

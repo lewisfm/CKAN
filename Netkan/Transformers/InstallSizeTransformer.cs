@@ -24,7 +24,7 @@ namespace CKAN.NetKAN.Transformers
             if (metadata.Download != null)
             {
                 var json = metadata.Json();
-                CkanModule mod = CkanModule.FromJson(json.ToString());
+                ReleaseDto mod = ReleaseDto.FromJson(json.ToString());
                 ZipFile    zip = new ZipFile(_http.DownloadModule(metadata));
                 json["install_size"] = _moduleService.FileSources(mod, zip)
                                                      .Where(ze => !ModuleInstaller.IsInternalCkan(ze))

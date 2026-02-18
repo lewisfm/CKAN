@@ -33,7 +33,7 @@ namespace CKAN.NetKAN.Transformers
             {
                 var moduleJson = metadata.Json();
                 moduleJson.SafeAdd("version", "1");
-                CkanModule mod = CkanModule.FromJson(moduleJson.ToString());
+                ReleaseDto mod = ReleaseDto.FromJson(moduleJson.ToString());
                 ZipFile    zip = new ZipFile(httpSvc.DownloadModule(metadata));
                 if (modSvc.GetInternalSpaceWarpInfos(mod, zip, metadata.Vref.Id)
                           .Select(loader.Load)

@@ -60,12 +60,12 @@ namespace CKAN.GUI
         /// <summary>
         /// Invoked when the user selects a module
         /// </summary>
-        public event Action<CkanModule?>? OnSelectedModuleChanged;
+        public event Action<ReleaseDto?>? OnSelectedModuleChanged;
 
         /// <summary>
         /// Invoked when the user clicks the Install toolbar button
         /// </summary>
-        public event Action<CkanModule[]>? Install;
+        public event Action<ReleaseDto[]>? Install;
 
         /// <summary>
         /// Invoked when the user clicks OK
@@ -92,7 +92,7 @@ namespace CKAN.GUI
                                               .Select(lvi => lvi.Tag as FileInfo)
                                               .OfType<FileInfo>()
                                               .First();
-                    var modRows = CkanModule.FromFile(path.FullName)
+                    var modRows = ReleaseDto.FromFile(path.FullName)
                                             .depends
                                             ?.OfType<ModuleRelationshipDescriptor>()
                                              .Select(ItemFromRelationship)
@@ -187,7 +187,7 @@ namespace CKAN.GUI
         }
 
         // Registry.LatestAvailable without exceptions
-        private CkanModule? SaneLatestAvail(string identifier)
+        private ReleaseDto? SaneLatestAvail(string identifier)
         {
             if (inst != null)
             {
@@ -214,7 +214,7 @@ namespace CKAN.GUI
         {
             var mod = ModsListView.SelectedItems
                                   .Cast<ListViewItem>()
-                                  .Select(lvi => lvi.Tag as CkanModule)
+                                  .Select(lvi => lvi.Tag as ReleaseDto)
                                   .FirstOrDefault();
             if (mod != null)
             {
@@ -228,7 +228,7 @@ namespace CKAN.GUI
                                         .Cast<ListViewItem>()
                                         .Where(lvi => lvi.Group == NotInstalledGroup)
                                         .Select(lvi => lvi.Tag)
-                                        .OfType<CkanModule>()
+                                        .OfType<ReleaseDto>()
                                         .ToArray());
         }
 

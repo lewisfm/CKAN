@@ -662,10 +662,10 @@ namespace CKAN
                         switch (User.RaiseSelectionDialog(
                                     bytesFree.HasValue
                                         ? string.Format(Properties.Resources.GameInstanceManagerCacheMigrationPrompt,
-                                                        CkanModule.FmtSize(oldNumBytes),
-                                                        CkanModule.FmtSize(bytesFree.Value))
+                                                        ReleaseDto.FmtSize(oldNumBytes),
+                                                        ReleaseDto.FmtSize(bytesFree.Value))
                                         : string.Format(Properties.Resources.GameInstanceManagerCacheMigrationPromptFreeSpaceUnknown,
-                                                        CkanModule.FmtSize(oldNumBytes)),
+                                                        ReleaseDto.FmtSize(oldNumBytes)),
                                     oldNumBytes < (bytesFree ?? 0) ? 0 : 2,
                                     Properties.Resources.GameInstanceManagerCacheMigrationMove,
                                     Properties.Resources.GameInstanceManagerCacheMigrationDelete,

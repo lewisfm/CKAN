@@ -35,8 +35,8 @@ namespace CKAN.ConsoleUI {
                              Registry            registry,
                              string?             userAgent,
                              ChangePlan          cp,
-                             CkanModule          m,
-                             List<CkanModule>?   upgradeable,
+                             ReleaseDto          m,
+                             List<ReleaseDto>?   upgradeable,
                              bool                dbg)
             : base(theme)
         {
@@ -88,7 +88,7 @@ namespace CKAN.ConsoleUI {
             ));
             AddObject(new ConsoleLabel(
                 13, 5, midL / 2,
-                () => CkanModule.FmtSize(mod.download_size)
+                () => ReleaseDto.FmtSize(mod.download_size)
             ));
             if (mod.install_size > 0)
             {
@@ -100,7 +100,7 @@ namespace CKAN.ConsoleUI {
                 ));
                 AddObject(new ConsoleLabel(
                     (midL / 2) + 9, 5, midL - 2,
-                    () => CkanModule.FmtSize(mod.install_size)
+                    () => ReleaseDto.FmtSize(mod.install_size)
                 ));
             }
             AddObject(new ConsoleLabel(
@@ -346,7 +346,7 @@ namespace CKAN.ConsoleUI {
         }
 
         private string RelationshipString(RelationshipDescriptor rel,
-                                          List<CkanModule>       upgradeable,
+                                          List<ReleaseDto>       upgradeable,
                                           int                    width)
             => ScreenObject.TruncateLength((ModListScreen.StatusSymbol(
                                                 rel is ModuleRelationshipDescriptor mrd
@@ -374,8 +374,8 @@ namespace CKAN.ConsoleUI {
                 var  inst              = registry.GetInstalledVersion(mod.identifier);
                 var  latest            = registry.LatestAvailable(mod.identifier, stabilityTolerance, null);
                 var  others            = registry.AvailableByIdentifier(mod.identifier)
-                                                 .Except(new[] { inst, latest }.OfType<CkanModule>())
-                                                 .OfType<CkanModule?>()
+                                                 .Except(new[] { inst, latest }.OfType<ReleaseDto>())
+                                                 .OfType<ReleaseDto?>()
                                                  .ToList();
 
                 bool installed         = registry.IsInstalled(mod.identifier, false);
@@ -397,7 +397,7 @@ namespace CKAN.ConsoleUI {
                                 () => string.Format(Properties.Resources.ModInfoReplacedBy, mr.ReplaceWith.identifier),
                                 th => th.AlertFrameFg,
                                 false,
-                                new List<CkanModule?>() { mr.ReplaceWith });
+                                new List<ReleaseDto?>() { mr.ReplaceWith });
                             boxTop += boxH;
 
                             addVersionBox(
@@ -408,7 +408,7 @@ namespace CKAN.ConsoleUI {
                                     : Properties.Resources.ModInfoInstalledManually,
                                 th => th.ActiveFrameFg,
                                 true,
-                                new List<CkanModule?>() { inst });
+                                new List<ReleaseDto?>() { inst });
                             boxTop += boxH;
 
                         } else {
@@ -421,7 +421,7 @@ namespace CKAN.ConsoleUI {
                                     : Properties.Resources.ModInfoLatestInstalledManually,
                                 th => th.ActiveFrameFg,
                                 true,
-                                new List<CkanModule?>() { inst });
+                                new List<ReleaseDto?>() { inst });
                             boxTop += boxH;
 
                         }
@@ -433,7 +433,7 @@ namespace CKAN.ConsoleUI {
                             () => Properties.Resources.ModInfoLatestVersion,
                             th => th.AlertFrameFg,
                             false,
-                            new List<CkanModule?>() { latest });
+                            new List<ReleaseDto?>() { latest });
                         boxTop += boxH;
 
                         addVersionBox(
@@ -444,7 +444,7 @@ namespace CKAN.ConsoleUI {
                                 : Properties.Resources.ModInfoInstalledManually,
                             th => th.ActiveFrameFg,
                             true,
-                            new List<CkanModule?>() { inst });
+                            new List<ReleaseDto?>() { inst });
                         boxTop += boxH;
 
                     }
@@ -455,7 +455,7 @@ namespace CKAN.ConsoleUI {
                         () => Properties.Resources.ModInfoLatestVersion,
                         th => th.NormalFrameFg,
                         false,
-                        new List<CkanModule?>() { latest });
+                        new List<ReleaseDto?>() { latest });
                     boxTop += boxH;
 
                 }
@@ -484,7 +484,7 @@ namespace CKAN.ConsoleUI {
                         : Properties.Resources.ModInfoUnavailableInstalledManually,
                     th => th.AlertFrameFg,
                     true,
-                    new List<CkanModule?>() { mod });
+                    new List<ReleaseDto?>() { mod });
                 boxTop += boxH;
 
             }
@@ -495,7 +495,7 @@ namespace CKAN.ConsoleUI {
                                    Func<string> title,
                                    Func<ConsoleTheme, ConsoleColor> color,
                                    bool doubleLine,
-                                   List<CkanModule?> releases)
+                                   List<ReleaseDto?> releases)
         {
             AddObject(new ConsoleFrame(
                 l, t, r, b,
@@ -506,7 +506,7 @@ namespace CKAN.ConsoleUI {
 
             if (releases != null && releases.Count > 0) {
 
-                CkanModule.GetMinMaxVersions(releases,
+                ReleaseDto.GetMinMaxVersions(releases,
                                              out ModuleVersion? minMod, out ModuleVersion? maxMod,
                                              out GameVersion? minKsp,   out GameVersion? maxKsp);
                 AddObject(new ConsoleLabel(
@@ -597,7 +597,7 @@ namespace CKAN.ConsoleUI {
                     ps,
                     () => {
                         try {
-                            dl.DownloadModules(new List<CkanModule> {mod});
+                            dl.DownloadModules(new List<ReleaseDto> {mod});
                             if (!manager.Cache.IsMaybeCachedZip(mod)) {
                                 ps.RaiseError(Properties.Resources.ModInfoDownloadFailed);
                             }
@@ -624,9 +624,9 @@ namespace CKAN.ConsoleUI {
         private readonly GameInstanceManager        manager;
         private readonly IRegistryQuerier           registry;
         private readonly string?                    userAgent;
-        private readonly List<CkanModule>           upgradeable;
+        private readonly List<ReleaseDto>           upgradeable;
         private readonly ChangePlan                 plan;
-        private readonly CkanModule                 mod;
+        private readonly ReleaseDto                 mod;
         private readonly ReleaseStatusComboButtons? stabilityToleranceButtons;
         private readonly bool                       debug;
     }

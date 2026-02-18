@@ -50,18 +50,18 @@ namespace CKAN.GUI
                 if (ModuleInstaller.FindRecommendations(
                         CurrentInstance,
                         registry.InstalledModules.Select(im => im.Module).ToHashSet(),
-                        Array.Empty<CkanModule>(),
-                        Array.Empty<CkanModule>(),
-                        Array.Empty<CkanModule>(),
+                        Array.Empty<ReleaseDto>(),
+                        Array.Empty<ReleaseDto>(),
+                        Array.Empty<ReleaseDto>(),
                         registry,
-                        out Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-                        out Dictionary<CkanModule, List<string>> suggestions,
-                        out Dictionary<CkanModule, HashSet<string>> supporters)
+                        out Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+                        out Dictionary<ReleaseDto, List<string>> suggestions,
+                        out Dictionary<ReleaseDto, HashSet<string>> supporters)
                     && configuration != null)
                 {
                     tabController.ShowTab(ChooseRecommendedModsTabPage.Name, 3);
                     ChooseRecommendedMods.LoadRecommendations(
-                        registry, Array.Empty<CkanModule>(), Array.Empty<CkanModule>(),
+                        registry, Array.Empty<ReleaseDto>(), Array.Empty<ReleaseDto>(),
                         versionCriteria, Manager.Cache,
                         CurrentInstance.Game,
                         ModuleLabelList.ModuleLabels

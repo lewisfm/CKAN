@@ -28,7 +28,7 @@ namespace Tests.Core.IO
             {
                 var registry  = CKAN.Registry.Empty(repoData.Manager);
                 var files     = new HashSet<FileInfo> { new FileInfo(zipPath) };
-                var toInstall = new List<CkanModule>();
+                var toInstall = new List<ReleaseDto>();
 
                 // Act
                 var result = ModuleImporter.ImportFiles(files, user, toInstall.Add,

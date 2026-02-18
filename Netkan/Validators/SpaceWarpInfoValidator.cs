@@ -24,7 +24,7 @@ namespace CKAN.NetKAN.Validators
         public void Validate(Metadata metadata)
         {
             var moduleJson = metadata.AllJson;
-            var mod = CkanModule.FromJson(moduleJson.ToString());
+            var mod = ReleaseDto.FromJson(moduleJson.ToString());
             if (httpSvc.DownloadModule(metadata) is string file
                 && new ZipFile(file) is ZipFile zip
                 && modSvc.GetInternalSpaceWarpInfos(mod, zip, null)

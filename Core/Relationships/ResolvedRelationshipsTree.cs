@@ -23,10 +23,10 @@ namespace CKAN
 
     public class ResolvedRelationshipsTree
     {
-        public ResolvedRelationshipsTree(IReadOnlyCollection<CkanModule> modules,
+        public ResolvedRelationshipsTree(IReadOnlyCollection<ReleaseDto> modules,
                                          IRegistryQuerier                registry,
                                          IReadOnlyCollection<string>     dlls,
-                                         IReadOnlyCollection<CkanModule> installed,
+                                         IReadOnlyCollection<ReleaseDto> installed,
                                          StabilityToleranceConfig        stabilityTolerance,
                                          GameVersionCriteria             crit,
                                          OptionalRelationships           optRels)
@@ -34,12 +34,12 @@ namespace CKAN
             resolved = ResolveManyCached(modules, registry, dlls, installed, stabilityTolerance, crit, optRels, relationshipCache).ToArray();
         }
 
-        public static IEnumerable<ResolvedRelationship> ResolveModule(CkanModule                      module,
-                                                                      IReadOnlyCollection<CkanModule> definitelyInstalling,
-                                                                      IReadOnlyCollection<CkanModule> allInstalling,
+        public static IEnumerable<ResolvedRelationship> ResolveModule(ReleaseDto                      module,
+                                                                      IReadOnlyCollection<ReleaseDto> definitelyInstalling,
+                                                                      IReadOnlyCollection<ReleaseDto> allInstalling,
                                                                       IRegistryQuerier                registry,
                                                                       IReadOnlyCollection<string>     dlls,
-                                                                      IReadOnlyCollection<CkanModule> installed,
+                                                                      IReadOnlyCollection<ReleaseDto> installed,
                                                                       StabilityToleranceConfig        stabilityTolerance,
                                                                       GameVersionCriteria             crit,
                                                                       OptionalRelationships           optRels,
@@ -58,12 +58,12 @@ namespace CKAN
         public IEnumerable<ResolvedRelationship[]> Unsatisfied()
             => resolved.SelectMany(rr => rr.UnsatisfiedFrom());
 
-        public IReadOnlyList<CkanModule> Candidates(RelationshipDescriptor          rel,
-                                                    IReadOnlyCollection<CkanModule> installing,
+        public IReadOnlyList<ReleaseDto> Candidates(RelationshipDescriptor          rel,
+                                                    IReadOnlyCollection<ReleaseDto> installing,
                                                     IRegistryQuerier                registry,
                                                     IGame                           game)
         {
-            var candidates = new List<CkanModule>();
+            var candidates = new List<ReleaseDto>();
             var unresolved = new List<ResolvedRelationship[]>();
             switch (relationshipCache.GetValueOrDefault(rel))
             {
@@ -77,7 +77,7 @@ namespace CKAN
 
                 case ResolvedByNew resRel:
                     // We need to have this loop at this level to accumulate the list of candidates
-                    foreach ((CkanModule module, ResolvedRelationship[] rrs) in resRel.resolved)
+                    foreach ((ReleaseDto module, ResolvedRelationship[] rrs) in resRel.resolved)
                     {
                         if (module.BadRelationships(installing)
                                   .Select(r => relationshipCache.GetValueOrDefault(r.Descriptor))
@@ -128,10 +128,10 @@ namespace CKAN
             => string.Join(Environment.NewLine,
                            resolved.Select(rr => rr.ToString()));
 
-        private static IEnumerable<ResolvedRelationship> ResolveManyCached(IReadOnlyCollection<CkanModule> modules,
+        private static IEnumerable<ResolvedRelationship> ResolveManyCached(IReadOnlyCollection<ReleaseDto> modules,
                                                                            IRegistryQuerier                registry,
                                                                            IReadOnlyCollection<string>     dlls,
-                                                                           IReadOnlyCollection<CkanModule> installed,
+                                                                           IReadOnlyCollection<ReleaseDto> installed,
                                                                            StabilityToleranceConfig        stabilityTolerance,
                                                                            GameVersionCriteria             crit,
                                                                            OptionalRelationships           optRels,
@@ -139,14 +139,14 @@ namespace CKAN
             => modules.SelectMany(m => ResolveModule(m, modules, modules, registry, dlls, installed, stabilityTolerance, crit, optRels,
                                                      relationshipCache));
 
-        private static IEnumerable<ResolvedRelationship> ResolveRelationships(CkanModule                      module,
+        private static IEnumerable<ResolvedRelationship> ResolveRelationships(ReleaseDto                      module,
                                                                               List<RelationshipDescriptor>?   relationships,
                                                                               SelectionReason                 reason,
-                                                                              IReadOnlyCollection<CkanModule> definitelyInstalling,
-                                                                              IReadOnlyCollection<CkanModule> allInstalling,
+                                                                              IReadOnlyCollection<ReleaseDto> definitelyInstalling,
+                                                                              IReadOnlyCollection<ReleaseDto> allInstalling,
                                                                               IRegistryQuerier                registry,
                                                                               IReadOnlyCollection<string>     dlls,
-                                                                              IReadOnlyCollection<CkanModule> installed,
+                                                                              IReadOnlyCollection<ReleaseDto> installed,
                                                                               StabilityToleranceConfig        stabilityTolerance,
                                                                               GameVersionCriteria             crit,
                                                                               OptionalRelationships           optRels,
@@ -156,27 +156,27 @@ namespace CKAN
                                                     stabilityTolerance, crit, optRels, relationshipCache))
                             ?? Enumerable.Empty<ResolvedRelationship>();
 
-        private static ResolvedRelationship Resolve(CkanModule                      source,
+        private static ResolvedRelationship Resolve(ReleaseDto                      source,
                                                     RelationshipDescriptor          relationship,
                                                     SelectionReason                 reason,
-                                                    IReadOnlyCollection<CkanModule> definitelyInstalling,
-                                                    IReadOnlyCollection<CkanModule> allInstalling,
+                                                    IReadOnlyCollection<ReleaseDto> definitelyInstalling,
+                                                    IReadOnlyCollection<ReleaseDto> allInstalling,
                                                     IRegistryQuerier                registry,
                                                     IReadOnlyCollection<string>     dlls,
-                                                    IReadOnlyCollection<CkanModule> installed,
+                                                    IReadOnlyCollection<ReleaseDto> installed,
                                                     StabilityToleranceConfig        stabilityTolerance,
                                                     GameVersionCriteria             crit,
                                                     OptionalRelationships           optRels,
                                                     RelationshipCache               relationshipCache)
             => relationshipCache.GetOrAdd(relationship,
                                           rel => rel.MatchesAny(installed, dlls, registry.InstalledDlc,
-                                                                out CkanModule? installedMatch)
+                                                                out ReleaseDto? installedMatch)
                                                      ? installedMatch == null
                                                          ? new ResolvedByDLL(source, rel, reason)
                                                          : new ResolvedByInstalled(source, rel, reason, installedMatch)
 
                                                : rel.MatchesAny(allInstalling, null, null,
-                                                                out CkanModule? installingMatch)
+                                                                out ReleaseDto? installingMatch)
                                                  && installingMatch != null
                                                      ? new ResolvedByInstalling(source, rel, reason, installingMatch)
 

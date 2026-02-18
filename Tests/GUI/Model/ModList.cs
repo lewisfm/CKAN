@@ -70,7 +70,7 @@ namespace Tests.GUI
                                           }")))
             using (var repoData = new TemporaryRepositoryData(user, repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -214,12 +214,12 @@ namespace Tests.GUI
 
             // Arrange
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP())
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -227,7 +227,7 @@ namespace Tests.GUI
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -256,12 +256,12 @@ namespace Tests.GUI
         {
             // Arrange
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP())
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -269,7 +269,7 @@ namespace Tests.GUI
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -322,7 +322,7 @@ namespace Tests.GUI
                                           }").ToArray()))
             using (var repoData = new TemporaryRepositoryData(user, repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -376,10 +376,10 @@ namespace Tests.GUI
         {
             // Arrange
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -388,7 +388,7 @@ namespace Tests.GUI
                                       }))
             using (var instance = new DisposableKSP())
             using (var regMgr   = RegistryManager.Instance(instance.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -592,12 +592,12 @@ namespace Tests.GUI
         {
             // Arrange
             var user = new NullUser();
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var instance = new DisposableKSP())
             using (var config   = new FakeConfiguration(instance.KSP, instance.KSP.Name))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -605,7 +605,7 @@ namespace Tests.GUI
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(instance.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -658,13 +658,13 @@ namespace Tests.GUI
         {
             // Arrange
             var user      = new NullUser();
-            var repo      = new Repository("test", "https://github.com/");
+            var repo      = new RepositoryDto("test", "https://github.com/");
             var guiConfig = new GUIConfiguration();
             using (var inst     = new DisposableKSP())
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -672,7 +672,7 @@ namespace Tests.GUI
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -756,7 +756,7 @@ namespace Tests.GUI
             using (var config   = new FakeConfiguration(instance.KSP, instance.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(instance.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             using (var cacheDir = new TemporaryDirectory())
             using (var cache    = new NetModuleCache(cacheDir))
             {
@@ -777,7 +777,7 @@ namespace Tests.GUI
 
                 HashSet<string>? possibleConfigOnlyDirs = null;
                 installer.InstallList(
-                    new CkanModule[] { anyVersionModule },
+                    new ReleaseDto[] { anyVersionModule },
                     new RelationshipResolverOptions(instance.KSP.StabilityToleranceConfig),
                     regMgr,
                     ref possibleConfigOnlyDirs,

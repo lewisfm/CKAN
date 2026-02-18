@@ -22,7 +22,7 @@ namespace Tests.NetKAN.Validators
             var mHttp = new Mock<IHttpService>();
 
             var mModuleService = new Mock<IModuleService>();
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                           .Returns(true);
 
             var json = new JObject()
@@ -54,7 +54,7 @@ namespace Tests.NetKAN.Validators
                  .Returns("");
 
             var mModuleService = new Mock<IModuleService>();
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                           .Returns(false);
 
             var json = new JObject()

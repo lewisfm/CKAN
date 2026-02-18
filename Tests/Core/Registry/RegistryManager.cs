@@ -166,7 +166,7 @@ namespace Tests.Core.Registry
             // Act
             using (var inst     = new DisposableKSP(TestData.TestRegistryZeroBytes()))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 // Assert
                 var reg = regMgr.registry;
@@ -177,7 +177,7 @@ namespace Tests.Core.Registry
                 Assert.IsFalse(reg.HasAnyAvailable());
                 // installed_files isn't exposed for testing
                 // A default repo is set during load
-                CollectionAssert.AreEqual(new Repository[] { repo.repo },
+                CollectionAssert.AreEqual(new RepositoryDto[] { repo.repo },
                                           reg.Repositories.Values);
             }
         }
@@ -223,7 +223,7 @@ namespace Tests.Core.Registry
                                   }}");
                 // Act
                 using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                             new Repository[] { repo.repo }))
+                                                             new RepositoryDto[] { repo.repo }))
                 {
                     // Assert
                     var globalPaths = regMgr.registry.InstalledFileInfo().Select(tuple => tuple.relPath).ToArray();
@@ -253,7 +253,7 @@ namespace Tests.Core.Registry
             using (var noLog    = new TemporaryLogSuppressor())
             using (var inst     = new DisposableKSP(TestData.TestRegistryVersion1()))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 Assert.IsNull(regMgr.registry.InstalledModule("001ControlLock"));
                 var instMod = regMgr.registry.InstalledModule("ControlLock");
@@ -275,7 +275,7 @@ namespace Tests.Core.Registry
                 {
                     using (var inst   = new DisposableKSP(TestData.TestRegistryVersion999()))
                     using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                                 new Repository[] { repo.repo }))
+                                                                 new RepositoryDto[] { repo.repo }))
                     {
                     }
                 });
@@ -355,7 +355,7 @@ namespace Tests.Core.Registry
                 }
 
                 // Mark registered files as belonging to a module
-                registry.RegisterModule(CkanModule.FromJson(@"{
+                registry.RegisterModule(ReleaseDto.FromJson(@"{
                                             ""spec_version"": ""v1.4"",
                                             ""identifier"":   ""InstalledMod"",
                                             ""author"":       ""InstalledModder"",

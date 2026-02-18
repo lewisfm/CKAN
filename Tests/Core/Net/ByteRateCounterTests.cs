@@ -40,8 +40,8 @@ namespace Tests.Core
                                       brc.TimeLeftString);
             CollectionAssert.Contains(new string[]
                                       {
-                                          $"{CkanModule.FmtSize(brc.BytesPerSecond)}/sec - {CkanModule.FmtSize(90000)} ({secondsLeft-1} sec) left - 10%",
-                                          $"{CkanModule.FmtSize(brc.BytesPerSecond)}/sec - {CkanModule.FmtSize(90000)} ({secondsLeft} sec) left - 10%",
+                                          $"{ReleaseDto.FmtSize(brc.BytesPerSecond)}/sec - {ReleaseDto.FmtSize(90000)} ({secondsLeft-1} sec) left - 10%",
+                                          $"{ReleaseDto.FmtSize(brc.BytesPerSecond)}/sec - {ReleaseDto.FmtSize(90000)} ({secondsLeft} sec) left - 10%",
                                       },
                                       brc.Summary);
         }

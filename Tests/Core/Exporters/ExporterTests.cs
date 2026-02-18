@@ -18,9 +18,9 @@ namespace Tests.Core.Exporters
         [OneTimeSetUp]
         public void MakeInstance()
         {
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             inst     = new DisposableKSP(TestData.TestRegistry());
-            repoData = new TemporaryRepositoryData(new NullUser(), new Dictionary<Repository, RepositoryData>
+            repoData = new TemporaryRepositoryData(new NullUser(), new Dictionary<RepositoryDto, RepositoryData>
                        {
                            {
                                repo,
@@ -28,7 +28,7 @@ namespace Tests.Core.Exporters
                            },
                        });
             regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                new Repository[] { repo });
+                                                new RepositoryDto[] { repo });
             // The saved test data doesn't have sorted_repositories, use our fake repo
             regMgr.registry.RepositoriesAdd(repo);
         }

@@ -38,7 +38,7 @@ namespace CKAN
 
         // name => Repository
         [JsonProperty("sorted_repositories")]
-        private SortedDictionary<string, Repository>? repositories;
+        private SortedDictionary<string, RepositoryDto>? repositories;
 
         // name => relative path
         [JsonProperty]
@@ -58,16 +58,16 @@ namespace CKAN
         /// should invalidate the available mod caches.
         /// </summary>
         [JsonIgnore]
-        public ReadOnlyDictionary<string, Repository> Repositories
-            => new ReadOnlyDictionary<string, Repository>(repositories
-                                                          ?? new SortedDictionary<string, Repository>());
+        public ReadOnlyDictionary<string, RepositoryDto> Repositories
+            => new ReadOnlyDictionary<string, RepositoryDto>(repositories
+                                                          ?? new SortedDictionary<string, RepositoryDto>());
 
         /// <summary>
         /// Wrapper around assignment to this.repositories that invalidates
         /// available mod caches
         /// </summary>
         /// <param name="value">The repositories dictionary to replace our current one</param>
-        public void RepositoriesSet(SortedDictionary<string, Repository> value)
+        public void RepositoriesSet(SortedDictionary<string, RepositoryDto> value)
         {
             EnlistWithTransaction();
             InvalidateAvailableModCaches();
@@ -90,7 +90,7 @@ namespace CKAN
         /// available mod caches
         /// </summary>
         /// <param name="repo"></param>
-        public void RepositoriesAdd(Repository repo)
+        public void RepositoriesAdd(RepositoryDto repo)
         {
             EnlistWithTransaction();
             InvalidateAvailableModCaches();
@@ -235,7 +235,7 @@ namespace CKAN
                     installed_modules.Remove(old_ident);
 
                     // Extract the old module metadata
-                    CkanModule control_lock_mod = control_lock_entry.Module;
+                    ReleaseDto control_lock_mod = control_lock_entry.Module;
 
                     // Change to the correct ident.
                     control_lock_mod.identifier = new_ident;
@@ -262,14 +262,14 @@ namespace CKAN
 
             var oldDefaultRepo = new Uri("https://github.com/KSP-CKAN/CKAN-meta/archive/master.zip");
             if (repositories != null
-                && repositories.TryGetValue(Repository.default_ckan_repo_name,
-                                            out Repository? default_repo)
+                && repositories.TryGetValue(RepositoryDto.default_ckan_repo_name,
+                                            out RepositoryDto? default_repo)
                 && default_repo.uri == oldDefaultRepo
                 && context.Context is GameInstance gameInst)
             {
                 log.InfoFormat("Updating default metadata URL from {0} to {1}",
                                oldDefaultRepo, gameInst.Game.DefaultRepositoryURL);
-                repositories[Repository.default_ckan_repo_name].uri = gameInst.Game.DefaultRepositoryURL;
+                repositories[RepositoryDto.default_ckan_repo_name].uri = gameInst.Game.DefaultRepositoryURL;
             }
 
             if (repositories != null)
@@ -342,7 +342,7 @@ namespace CKAN
                         Dictionary<string, InstalledModule>  installed_modules,
                         Dictionary<string, string>           installed_dlls,
                         IDictionary<string, string>          installed_files,
-                        SortedDictionary<string, Repository> repositories)
+                        SortedDictionary<string, RepositoryDto> repositories)
             : this(repoData)
         {
             // Is there a better way of writing constructors than this? Srsly?
@@ -354,19 +354,19 @@ namespace CKAN
         }
 
         public Registry(RepositoryDataManager repoData,
-                        params Repository[] repositories)
+                        params RepositoryDto[] repositories)
             : this(repoData,
                    new Dictionary<string, InstalledModule>(),
                    new Dictionary<string, string>(),
                    new Dictionary<string, string>(),
-                   new SortedDictionary<string, Repository>(
+                   new SortedDictionary<string, RepositoryDto>(
                        repositories.ToDictionary(r => r.name ?? "",
                                                  r => r)))
         {
         }
 
         public Registry(RepositoryDataManager repoData,
-                        IEnumerable<Repository> repositories)
+                        IEnumerable<RepositoryDto> repositories)
             : this(repoData, repositories.ToArray())
         {
         }
@@ -376,7 +376,7 @@ namespace CKAN
                             new Dictionary<string, InstalledModule>(),
                             new Dictionary<string, string>(),
                             new Dictionary<string, string>(),
-                            new SortedDictionary<string, Repository>());
+                            new SortedDictionary<string, RepositoryDto>());
 
         public static Registry FromJson(GameInstance          inst,
                                         RepositoryDataManager repoData,
@@ -550,16 +550,16 @@ namespace CKAN
         private HashSet<string>? untagged;
 
         [JsonIgnore]
-        private Dictionary<string, List<CkanModule>>? downloadHashesIndex;
+        private Dictionary<string, List<ReleaseDto>>? downloadHashesIndex;
 
         [JsonIgnore]
-        private Dictionary<string, List<CkanModule>>? downloadUrlHashIndex;
+        private Dictionary<string, List<ReleaseDto>>? downloadUrlHashIndex;
 
         // Index of which mods provide what, format:
         //   providers[provided] = { provider1, provider2, ... }
         // Built by BuildProvidesIndex, makes LatestAvailableWithProvides much faster.
         [JsonIgnore]
-        private Dictionary<string, AvailableModule[]>? providers;
+        private Dictionary<string, ModuleDto[]>? providers;
 
         [JsonIgnore]
         private IDictionary<string, UnmanagedModuleVersion>? installedDlc;
@@ -588,7 +588,7 @@ namespace CKAN
             installedDlc      = null;
         }
 
-        private void RepositoriesUpdated(Repository[] which)
+        private void RepositoriesUpdated(RepositoryDto[] which)
         {
             if (Repositories.Values.Any(r => which.Contains(r)))
             {
@@ -625,7 +625,7 @@ namespace CKAN
                     repoDataMgr?.GetAllAvailDicts(Repositories.Values.OrderBy(r => r.priority)
                                                                      // Break ties alphanumerically
                                                                      .ThenBy(r => r.name))
-                               ?? Enumerable.Empty<Dictionary<string, AvailableModule>>(),
+                               ?? Enumerable.Empty<Dictionary<string, ModuleDto>>(),
                     providers,
                     installed_modules, InstalledDlls, InstalledDlc);
             }
@@ -635,19 +635,19 @@ namespace CKAN
         /// <summary>
         /// <see cref="IRegistryQuerier.CompatibleModules"/>
         /// </summary>
-        public IEnumerable<CkanModule> CompatibleModules(StabilityToleranceConfig stabilityTolerance,
+        public IEnumerable<ReleaseDto> CompatibleModules(StabilityToleranceConfig stabilityTolerance,
                                                          GameVersionCriteria?     crit)
             // Set up our compatibility partition
             => crit != null ? SetCompatibleVersion(stabilityTolerance, crit).LatestCompatible
                             : repoDataMgr?.GetAllAvailableModules(Repositories.Values)
                                           .Select(am => am.Latest(stabilityTolerance))
-                                          .OfType<CkanModule>()
-                                         ?? Enumerable.Empty<CkanModule>();
+                                          .OfType<ReleaseDto>()
+                                         ?? Enumerable.Empty<ReleaseDto>();
 
         /// <summary>
         /// <see cref="IRegistryQuerier.IncompatibleModules"/>
         /// </summary>
-        public IEnumerable<CkanModule> IncompatibleModules(StabilityToleranceConfig stabilityTolerance,
+        public IEnumerable<ReleaseDto> IncompatibleModules(StabilityToleranceConfig stabilityTolerance,
                                                            GameVersionCriteria      crit)
             // Set up our compatibility partition
             => SetCompatibleVersion(stabilityTolerance, crit).LatestIncompatible;
@@ -666,10 +666,10 @@ namespace CKAN
             // Set up our compatibility partition
             => SetCompatibleVersion(stabilityTolerance, crit).Compatible.ContainsKey(identifier);
 
-        private AvailableModule[] getAvail(string identifier)
+        private ModuleDto[] getAvail(string identifier)
         {
             var availMods = (repositories == null || repoDataMgr == null
-                                ? Enumerable.Empty<AvailableModule>()
+                                ? Enumerable.Empty<ModuleDto>()
                                 : repoDataMgr.GetAvailableModules(repositories.Values, identifier))
                             .ToArray();
             if (availMods.Length < 1)
@@ -682,15 +682,15 @@ namespace CKAN
         /// <summary>
         /// <see cref="IRegistryQuerier.LatestAvailable" />
         /// </summary>
-        public CkanModule? LatestAvailable(string                           identifier,
+        public ReleaseDto? LatestAvailable(string                           identifier,
                                            StabilityToleranceConfig         stabilityTolerance,
                                            GameVersionCriteria?             gameVersion,
                                            RelationshipDescriptor?          relationshipDescriptor = null,
-                                           IReadOnlyCollection<CkanModule>? installed              = null,
-                                           IReadOnlyCollection<CkanModule>? toInstall              = null)
+                                           IReadOnlyCollection<ReleaseDto>? installed              = null,
+                                           IReadOnlyCollection<ReleaseDto>? toInstall              = null)
             => getAvail(identifier).Select(am => am.Latest(stabilityTolerance, gameVersion, relationshipDescriptor,
                                                            installed, toInstall))
-                                   .OfType<CkanModule>()
+                                   .OfType<ReleaseDto>()
                                    .OrderByDescending(m => m.version)
                                    .FirstOrDefault();
 
@@ -701,7 +701,7 @@ namespace CKAN
         /// <returns>
         /// List of all modules with this identifier
         /// </returns>
-        public IEnumerable<CkanModule> AvailableByIdentifier(string identifier)
+        public IEnumerable<ReleaseDto> AvailableByIdentifier(string identifier)
             => getAvail(identifier).SelectMany(am => am.AllAvailable())
                                    .Distinct()
                                    .OrderByDescending(m => m.version);
@@ -711,7 +711,7 @@ namespace CKAN
         /// or null if it does not exist.
         /// <see cref = "IRegistryQuerier.GetModuleByVersion" />
         /// </summary>
-        public CkanModule? GetModuleByVersion(string ident, ModuleVersion version)
+        public ReleaseDto? GetModuleByVersion(string ident, ModuleVersion version)
             => Utilities.DefaultIfThrows(() => getAvail(ident))
                         ?.Select(am => am.ByVersion(version))
                          .FirstOrDefault(m => m != null);
@@ -745,9 +745,9 @@ namespace CKAN
         /// Generate the providers index so we can find providing modules quicker
         /// </summary>
         [MemberNotNull(nameof(providers))]
-        private Dictionary<string, AvailableModule[]> BuildProvidesIndex()
+        private Dictionary<string, ModuleDto[]> BuildProvidesIndex()
             => providers = (repoDataMgr?.GetAllAvailableModules(Repositories.Values)
-                                       ?? Enumerable.Empty<AvailableModule>())
+                                       ?? Enumerable.Empty<ModuleDto>())
                                         .SelectMany(am => am.AllAvailable()
                                                             .SelectMany(m => m.ProvidesList)
                                                             .Distinct()
@@ -796,7 +796,7 @@ namespace CKAN
         private void BuildTagIndex()
         {
             tags = (repoDataMgr?.GetAllAvailableModules(Repositories.Values)
-                               ?? Enumerable.Empty<AvailableModule>())
+                               ?? Enumerable.Empty<ModuleDto>())
                                 .SelectMany(am => am.AllAvailable()
                                                     .SelectMany(m => m.Tags ?? Enumerable.Empty<string>())
                                                     .Select(tag => (tag, ident: am.AllAvailable().First().identifier))
@@ -810,35 +810,35 @@ namespace CKAN
             tags.Remove("");
         }
 
-        public IEnumerable<AvailableModule> AllAvailableByProvides(string identifier)
+        public IEnumerable<ModuleDto> AllAvailableByProvides(string identifier)
             => (providers ?? BuildProvidesIndex())
-                    is Dictionary<string, AvailableModule[]> allProvs
-                && allProvs.TryGetValue(identifier, out AvailableModule[]? provs)
+                    is Dictionary<string, ModuleDto[]> allProvs
+                && allProvs.TryGetValue(identifier, out ModuleDto[]? provs)
                     ? provs
-                    : Enumerable.Empty<AvailableModule>();
+                    : Enumerable.Empty<ModuleDto>();
 
         /// <summary>
         /// <see cref="IRegistryQuerier.LatestAvailableWithProvides" />
         /// </summary>
-        public List<CkanModule> LatestAvailableWithProvides(string                           identifier,
+        public List<ReleaseDto> LatestAvailableWithProvides(string                           identifier,
                                                             StabilityToleranceConfig         stabilityTolerance,
                                                             GameVersionCriteria?             gameVersion,
                                                             RelationshipDescriptor?          relationship = null,
-                                                            IReadOnlyCollection<CkanModule>? installed    = null,
-                                                            IReadOnlyCollection<CkanModule>? toInstall    = null)
+                                                            IReadOnlyCollection<ReleaseDto>? installed    = null,
+                                                            IReadOnlyCollection<ReleaseDto>? toInstall    = null)
             => ((providers ?? BuildProvidesIndex())
-                    is Dictionary<string, AvailableModule[]> allProvs
-                && allProvs.TryGetValue(identifier, out AvailableModule[]? provs)
+                    is Dictionary<string, ModuleDto[]> allProvs
+                && allProvs.TryGetValue(identifier, out ModuleDto[]? provs)
                     // For each AvailableModule, we want the latest one matching our constraints
                     ? provs.Select(am => am.Latest(stabilityTolerance, gameVersion, relationship, installed, toInstall))
-                           .OfType<CkanModule>()
+                           .OfType<ReleaseDto>()
                            .Where(m => m.ProvidesList.Contains(identifier))
                            .Distinct()
                            // Put the most popular one on top
                            .OrderByDescending(m => repoDataMgr?.GetDownloadCount(Repositories.Values, m.identifier)
                                                               ?? 0)
                     // Nothing provides this
-                    : Enumerable.Empty<CkanModule>())
+                    : Enumerable.Empty<ReleaseDto>())
                .ToList();
 
         #endregion
@@ -847,7 +847,7 @@ namespace CKAN
         /// Register the supplied module as having been installed, thereby keeping
         /// track of its metadata and files.
         /// </summary>
-        public InstalledModule RegisterModule(CkanModule                  mod,
+        public InstalledModule RegisterModule(ReleaseDto                  mod,
                                               IReadOnlyCollection<string> absoluteFiles,
                                               GameInstance                inst,
                                               bool                        autoInstalled)
@@ -997,7 +997,7 @@ namespace CKAN
                     installed_modules[identifier] =
                         new InstalledModule(null,
                             GetModuleByVersion(identifier, version)
-                                ?? new CkanModule(
+                                ?? new ReleaseDto(
                                     new ModuleVersion("v1.28"),
                                     identifier,
                                     identifier,
@@ -1110,7 +1110,7 @@ namespace CKAN
         /// <summary>
         /// <see cref = "IRegistryQuerier.GetInstalledVersion" />
         /// </summary>
-        public CkanModule? GetInstalledVersion(string mod_identifier)
+        public ReleaseDto? GetInstalledVersion(string mod_identifier)
             => InstalledModule(mod_identifier)?.Module;
 
         /// <summary>
@@ -1149,8 +1149,8 @@ namespace CKAN
         /// <returns>List of modules whose dependencies are about to be or already removed.</returns>
         public static IEnumerable<string> FindReverseDependencies(
             IReadOnlyCollection<string>                 modulesToRemove,
-            IReadOnlyCollection<CkanModule>             modulesToInstall,
-            IReadOnlyCollection<CkanModule>             origInstalled,
+            IReadOnlyCollection<ReleaseDto>             modulesToInstall,
+            IReadOnlyCollection<ReleaseDto>             origInstalled,
             IReadOnlyCollection<string>                 dlls,
             IDictionary<string, UnmanagedModuleVersion> dlc,
             Func<RelationshipDescriptor, bool>?         satisfiedFilter = null)
@@ -1226,9 +1226,9 @@ namespace CKAN
         /// </summary>
         public IEnumerable<string> FindReverseDependencies(
                 IReadOnlyCollection<string>         modulesToRemove,
-                IReadOnlyCollection<CkanModule>?    modulesToInstall = null,
+                IReadOnlyCollection<ReleaseDto>?    modulesToInstall = null,
                 Func<RelationshipDescriptor, bool>? satisfiedFilter  = null)
-            => FindReverseDependencies(modulesToRemove, modulesToInstall ?? Array.Empty<CkanModule>(),
+            => FindReverseDependencies(modulesToRemove, modulesToInstall ?? Array.Empty<ReleaseDto>(),
                                        installed_modules.Values.Select(im => im.Module)
                                                                .ToHashSet(),
                                        InstalledDlls, InstalledDlc,
@@ -1241,28 +1241,28 @@ namespace CKAN
         /// <returns>
         /// dictionary[sha256 or sha1] = {mod1, mod2, mod3};
         /// </returns>
-        public IReadOnlyDictionary<string, List<CkanModule>> GetDownloadHashesIndex()
+        public IReadOnlyDictionary<string, List<ReleaseDto>> GetDownloadHashesIndex()
             => downloadHashesIndex ??=
                    (repoDataMgr?.GetAllAvailableModules(Repositories.Values)
                                 .SelectMany(availMod => availMod.module_version.Values)
-                               ?? Enumerable.Empty<CkanModule>())
+                               ?? Enumerable.Empty<ReleaseDto>())
                                 .SelectMany(ModWithDownloadHashes)
                                 .GroupBy(tuple => tuple.Item1,
                                          tuple => tuple.Item2)
                                 .ToDictionary(grp => grp.Key,
                                               grp => grp.ToList());
 
-        private IEnumerable<Tuple<string, CkanModule>> ModWithDownloadHashes(CkanModule m)
+        private IEnumerable<Tuple<string, ReleaseDto>> ModWithDownloadHashes(ReleaseDto m)
         {
             if (m.download_hash is DownloadHashesDescriptor descr)
             {
                 if (descr.sha256 != null && !string.IsNullOrEmpty(descr.sha256))
                 {
-                    yield return new Tuple<string, CkanModule>(descr.sha256, m);
+                    yield return new Tuple<string, ReleaseDto>(descr.sha256, m);
                 }
                 if (descr.sha1 != null && !string.IsNullOrEmpty(descr.sha1))
                 {
-                    yield return new Tuple<string, CkanModule>(descr.sha1, m);
+                    yield return new Tuple<string, ReleaseDto>(descr.sha1, m);
                 }
             }
         }
@@ -1274,13 +1274,13 @@ namespace CKAN
         /// <returns>
         /// dictionary[urlHash] = {mod1, mod2, mod3};
         /// </returns>
-        public IReadOnlyDictionary<string, List<CkanModule>> GetDownloadUrlHashIndex()
+        public IReadOnlyDictionary<string, List<ReleaseDto>> GetDownloadUrlHashIndex()
             => downloadUrlHashIndex ??=
                    (repoDataMgr?.GetAllAvailableModules(Repositories.Values)
-                               ?? Enumerable.Empty<AvailableModule>())
+                               ?? Enumerable.Empty<ModuleDto>())
                                 .SelectMany(am => am.module_version.Values)
-                                .SelectMany(m => m.download?.Select(url => new Tuple<Uri, CkanModule>(url, m))
-                                                           ?? Enumerable.Empty<Tuple<Uri, CkanModule>>())
+                                .SelectMany(m => m.download?.Select(url => new Tuple<Uri, ReleaseDto>(url, m))
+                                                           ?? Enumerable.Empty<Tuple<Uri, ReleaseDto>>())
                                 .GroupBy(tuple => tuple.Item1,
                                          tuple => tuple.Item2)
                                 .ToDictionary(grp => NetFileCache.CreateURLHash(grp.Key),
@@ -1288,7 +1288,7 @@ namespace CKAN
 
         public IReadOnlyDictionary<string, Uri> GetDownloadUrlsByHash()
             => (repoDataMgr?.GetAllAvailableModules(Repositories.Values)
-                           ?? Enumerable.Empty<AvailableModule>())
+                           ?? Enumerable.Empty<ModuleDto>())
                             .SelectMany(am => am.module_version.Values)
                             .SelectMany(m => m.download ?? Enumerable.Empty<Uri>())
                             .Distinct()

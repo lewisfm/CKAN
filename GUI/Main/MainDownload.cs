@@ -79,10 +79,10 @@ namespace CKAN.GUI
                                                            .IntersectsWith(kvp.Key?.download ?? Enumerable.Empty<Uri>()))
                                            .ToArray(),
                                     kvp.Value)),
-                                (m1, m2) => (m1 as CkanModule)?.download == (m2 as CkanModule)?.download);
+                                (m1, m2) => (m1 as ReleaseDto)?.download == (m2 as ReleaseDto)?.download);
                              dfd.ShowDialog(this);
                         });
-                        var skip  = (dfd?.Wait()?.OfType<CkanModule>() ?? Enumerable.Empty<CkanModule>())
+                        var skip  = (dfd?.Wait()?.OfType<ReleaseDto>() ?? Enumerable.Empty<ReleaseDto>())
                                                  .ToArray();
                         var abort = dfd?.Abort ?? false;
                         dfd?.Dispose();
@@ -132,7 +132,7 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        private void UpdateCachedByDownloads(CkanModule? module)
+        private void UpdateCachedByDownloads(ReleaseDto? module)
         {
             if (Manager.Cache is NetModuleCache cache)
             {
@@ -141,7 +141,7 @@ namespace CKAN.GUI
                 var affectedMods =
                     module?.GetDownloadsGroup(allGuiMods.Values
                                                         .Select(guiMod => guiMod.Module)
-                                                        .OfType<CkanModule>())
+                                                        .OfType<ReleaseDto>())
                            .Select(other => allGuiMods.GetValueOrDefault(other.identifier))
                            .OfType<GUIMod>()
                           ?? allGuiMods.Values;
@@ -169,7 +169,7 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        private void OnModStoredOrPurged(CkanModule? module)
+        private void OnModStoredOrPurged(ReleaseDto? module)
         {
             UpdateCachedByDownloads(module);
         }

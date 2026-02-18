@@ -14,7 +14,7 @@ namespace CKAN
 
     public abstract class ResolvedRelationship : IEquatable<ResolvedRelationship>
     {
-        public ResolvedRelationship(CkanModule             source,
+        public ResolvedRelationship(ReleaseDto             source,
                                     RelationshipDescriptor relationship,
                                     SelectionReason        reason)
         {
@@ -23,11 +23,11 @@ namespace CKAN
             this.reason       = reason;
         }
 
-        public readonly CkanModule             source;
+        public readonly ReleaseDto             source;
         public readonly RelationshipDescriptor relationship;
         public readonly SelectionReason        reason;
 
-        public virtual bool Contains(CkanModule mod)
+        public virtual bool Contains(ReleaseDto mod)
             => false;
 
         protected virtual bool Unsatisfied()
@@ -41,7 +41,7 @@ namespace CKAN
         public virtual IEnumerable<string> ToLines()
             => Enumerable.Repeat(ToString(), 1);
 
-        public abstract ResolvedRelationship WithSource(CkanModule      newSrc,
+        public abstract ResolvedRelationship WithSource(ReleaseDto      newSrc,
                                                         SelectionReason newRsn);
 
         public override bool Equals(object? other)
@@ -61,63 +61,63 @@ namespace CKAN
                    ? Enumerable.Repeat(new ResolvedRelationship[] { this }, 1)
                    : Enumerable.Empty<ResolvedRelationship[]>();
 
-        public virtual IReadOnlyCollection<(ResolvedRelationship[], Relationship)> BadRelationships(IReadOnlyCollection<CkanModule> installing)
+        public virtual IReadOnlyCollection<(ResolvedRelationship[], Relationship)> BadRelationships(IReadOnlyCollection<ReleaseDto> installing)
             => Array.Empty<(ResolvedRelationship[], Relationship)>();
     }
 
     public class ResolvedByInstalled : ResolvedRelationship
     {
-        public ResolvedByInstalled(CkanModule             source,
+        public ResolvedByInstalled(ReleaseDto             source,
                                    RelationshipDescriptor relationship,
                                    SelectionReason        reason,
-                                   CkanModule             installed)
+                                   ReleaseDto             installed)
              : base(source, relationship, reason)
         {
             this.installed = installed;
         }
 
-        public readonly CkanModule installed;
+        public readonly ReleaseDto installed;
 
-        public override bool Contains(CkanModule mod)
+        public override bool Contains(ReleaseDto mod)
             => installed == mod;
 
         [ExcludeFromCodeCoverage]
         public override string ToString()
             => $"{source} {relationship}: Installed {installed}";
 
-        public override ResolvedRelationship WithSource(CkanModule newSrc, SelectionReason newRsn)
+        public override ResolvedRelationship WithSource(ReleaseDto newSrc, SelectionReason newRsn)
             => source == newSrc ? this
                                 : new ResolvedByInstalled(newSrc, relationship, newRsn, installed);
     }
 
     public class ResolvedByInstalling : ResolvedRelationship
     {
-        public ResolvedByInstalling(CkanModule             source,
+        public ResolvedByInstalling(ReleaseDto             source,
                                     RelationshipDescriptor relationship,
                                     SelectionReason        reason,
-                                    CkanModule             installing)
+                                    ReleaseDto             installing)
              : base(source, relationship, reason)
         {
             this.installing = installing;
         }
 
-        public readonly CkanModule installing;
+        public readonly ReleaseDto installing;
 
-        public override bool Contains(CkanModule mod)
+        public override bool Contains(ReleaseDto mod)
             => installing == mod;
 
         [ExcludeFromCodeCoverage]
         public override string ToString()
             => $"{base.ToString()}: Installing {installing}";
 
-        public override ResolvedRelationship WithSource(CkanModule newSrc, SelectionReason newRsn)
+        public override ResolvedRelationship WithSource(ReleaseDto newSrc, SelectionReason newRsn)
             => source == newSrc ? this
                                 : new ResolvedByInstalling(newSrc, relationship, newRsn, installing);
     }
 
     public class ResolvedByDLL : ResolvedRelationship
     {
-        public ResolvedByDLL(CkanModule             source,
+        public ResolvedByDLL(ReleaseDto             source,
                              RelationshipDescriptor relationship,
                              SelectionReason        reason)
              : base(source, relationship, reason)
@@ -128,39 +128,39 @@ namespace CKAN
         public override string ToString()
             => $"{base.ToString()}: DLL";
 
-        public override ResolvedRelationship WithSource(CkanModule newSrc, SelectionReason newRsn)
+        public override ResolvedRelationship WithSource(ReleaseDto newSrc, SelectionReason newRsn)
             => source == newSrc ? this
                                 : new ResolvedByDLL(newSrc, relationship, newRsn);
     }
 
     public class ResolvedByNew : ResolvedRelationship
     {
-        public ResolvedByNew(CkanModule                                              source,
+        public ResolvedByNew(ReleaseDto                                              source,
                              RelationshipDescriptor                                  relationship,
                              SelectionReason                                         reason,
-                             IReadOnlyDictionary<CkanModule, ResolvedRelationship[]> resolved)
+                             IReadOnlyDictionary<ReleaseDto, ResolvedRelationship[]> resolved)
               : base(source, relationship, reason)
         {
             this.resolved = resolved;
         }
 
-        public ResolvedByNew(CkanModule             source,
+        public ResolvedByNew(ReleaseDto             source,
                              RelationshipDescriptor relationship,
                              SelectionReason        reason)
              : this(source, relationship, reason,
-                    new Dictionary<CkanModule, ResolvedRelationship[]>())
+                    new Dictionary<ReleaseDto, ResolvedRelationship[]>())
         {
         }
 
-        public ResolvedByNew(CkanModule                      source,
+        public ResolvedByNew(ReleaseDto                      source,
                              RelationshipDescriptor          relationship,
                              SelectionReason                 reason,
-                             IReadOnlyCollection<CkanModule> providers,
-                             IReadOnlyCollection<CkanModule> definitelyInstalling,
-                             IReadOnlyCollection<CkanModule> allInstalling,
+                             IReadOnlyCollection<ReleaseDto> providers,
+                             IReadOnlyCollection<ReleaseDto> definitelyInstalling,
+                             IReadOnlyCollection<ReleaseDto> allInstalling,
                              IRegistryQuerier                registry,
                              IReadOnlyCollection<string>     dlls,
-                             IReadOnlyCollection<CkanModule> installed,
+                             IReadOnlyCollection<ReleaseDto> installed,
                              StabilityToleranceConfig        stabilityTolerance,
                              GameVersionCriteria             crit,
                              OptionalRelationships           optRels,
@@ -188,9 +188,9 @@ namespace CKAN
         /// The modules that can satisfy this relationship and their own relationships.
         /// If this is empty, then the relationship cannot be satisfied.
         /// </summary>
-        public readonly IReadOnlyDictionary<CkanModule, ResolvedRelationship[]> resolved;
+        public readonly IReadOnlyDictionary<ReleaseDto, ResolvedRelationship[]> resolved;
 
-        public override bool Contains(CkanModule mod)
+        public override bool Contains(ReleaseDto mod)
             => resolved.Any(rr => rr.Key == mod || rr.Value.Any(rrr => rrr.Contains(mod)));
 
         protected override bool Unsatisfied()
@@ -213,7 +213,7 @@ namespace CKAN
                                                                                  .Select(line => $"\t{line}")))
                                          .Select(line => $"\t{line}"));
 
-        public override ResolvedRelationship WithSource(CkanModule newSrc, SelectionReason newRsn)
+        public override ResolvedRelationship WithSource(ReleaseDto newSrc, SelectionReason newRsn)
             => source == newSrc ? this
                                 : new ResolvedByNew(newSrc, relationship, newRsn, resolved);
 
@@ -248,12 +248,12 @@ namespace CKAN
             return Enumerable.Empty<ResolvedRelationship[]>();
         }
 
-        public override IReadOnlyCollection<(ResolvedRelationship[], Relationship)> BadRelationships(IReadOnlyCollection<CkanModule> installing)
+        public override IReadOnlyCollection<(ResolvedRelationship[], Relationship)> BadRelationships(IReadOnlyCollection<ReleaseDto> installing)
         {
             if (reason is SelectionReason.Depends)
             {
                 var unsatisfied = new List<(ResolvedRelationship[], Relationship)>();
-                foreach ((CkanModule module, ResolvedRelationship[] resRels) in resolved)
+                foreach ((ReleaseDto module, ResolvedRelationship[] resRels) in resolved)
                 {
                     if (module.BadRelationships(installing)
                               .Select(r => (new ResolvedRelationship[] { this }, r))

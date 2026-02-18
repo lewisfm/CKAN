@@ -30,14 +30,14 @@ namespace CKAN.IO
         /// <param name="allowDelete">True to ask user whether to delete imported files, false to leave the files as is</param>
         public static bool ImportFiles(HashSet<FileInfo>  files,
                                        IUser              user,
-                                       Action<CkanModule> installMod,
+                                       Action<ReleaseDto> installMod,
                                        Registry           registry,
                                        GameInstance       instance,
                                        NetModuleCache     Cache,
                                        bool               allowDelete = true)
         {
             if (!TryGetFileModules(files, registry, Cache,
-                                   out Dictionary<FileInfo, List<CkanModule>> matched,
+                                   out Dictionary<FileInfo, List<ReleaseDto>> matched,
                                    out List<FileInfo> notFound,
                                    new ProgressImmediate<int>(p =>
                                        user.RaiseProgress(Properties.Resources.ModuleInstallerImportScanningFiles,
@@ -71,14 +71,14 @@ namespace CKAN.IO
                                                                   .Select(m => (File:   kvp.Key,
                                                                                 Module: m)))
                                       .ToGroupedDictionary(tuple => Cache.IsMaybeCachedZip(tuple.Module));
-            if (cachedGroups.TryGetValue(true, out (FileInfo File, CkanModule Module)[]? alreadyStored))
+            if (cachedGroups.TryGetValue(true, out (FileInfo File, ReleaseDto Module)[]? alreadyStored))
             {
                 // Notify about files that are already cached
                 user.RaiseMessage(" ");
                 user.RaiseMessage(Properties.Resources.ModuleInstallerImportAlreadyCached,
                                   string.Join(", ", alreadyStored.Select(tuple => $"{tuple.Module} ({tuple.File.Name})")));
             }
-            if (cachedGroups.TryGetValue(false, out (FileInfo File, CkanModule Module)[]? toStore))
+            if (cachedGroups.TryGetValue(false, out (FileInfo File, ReleaseDto Module)[]? toStore))
             {
                 // Store any new files
                 user.RaiseMessage(" ");
@@ -95,7 +95,7 @@ namespace CKAN.IO
                     rateCounter.BytesLeft = rateCounter.Size - (installedBytes + bytes);
                     user.RaiseProgress(rateCounter);
                 });
-                foreach ((FileInfo fi, CkanModule module) in toStore)
+                foreach ((FileInfo fi, ReleaseDto module) in toStore)
                 {
 
                     // Update the progress string
@@ -138,11 +138,11 @@ namespace CKAN.IO
         private static bool TryGetFileModules(HashSet<FileInfo>                          files,
                                               Registry                                   registry,
                                               NetModuleCache                             Cache,
-                                              out Dictionary<FileInfo, List<CkanModule>> matched,
+                                              out Dictionary<FileInfo, List<ReleaseDto>> matched,
                                               out List<FileInfo>                         notFound,
                                               IProgress<int>                             percentProgress)
         {
-            matched      = new Dictionary<FileInfo, List<CkanModule>>();
+            matched      = new Dictionary<FileInfo, List<ReleaseDto>>();
             notFound     = new List<FileInfo>();
             var index    = registry.GetDownloadHashesIndex();
             var progress = new ProgressScalePercentsByFileSizes(percentProgress,
@@ -150,7 +150,7 @@ namespace CKAN.IO
             foreach (var fi in files.Distinct())
             {
                 if (index.TryGetValue(Cache.GetFileHashSha256(fi.FullName, progress),
-                                      out List<CkanModule>? modules)
+                                      out List<ReleaseDto>? modules)
                     // The progress bar will jump back and "redo" the same span
                     // for non-matched files, but that's... OK?
                     || index.TryGetValue(Cache.GetFileHashSha1(fi.FullName, progress),
@@ -178,7 +178,7 @@ namespace CKAN.IO
         private static readonly Regex swInfoRegex = new Regex(@"^#/ckan/space-warp(/(?<filter>.*))?$",
                                                               RegexOptions.Compiled);
 
-        private static IEnumerable<CkanModule> GetInternalModules(ZipFile zip)
+        private static IEnumerable<ReleaseDto> GetInternalModules(ZipFile zip)
         {
             var internalCkans = InternalCkanFiles(zip).ToArray();
             // CkanModule.download is required for cache management, set a default if missing
@@ -204,8 +204,8 @@ namespace CKAN.IO
                     ApplySpaceWarpInfos(InternalSpaceWarpInfos(zip, filter).ToArray(), grp);
                 }
             }
-            return internalCkans.Select(json => json.ToObject<CkanModule>())
-                                .OfType<CkanModule>();
+            return internalCkans.Select(json => json.ToObject<ReleaseDto>())
+                                .OfType<ReleaseDto>();
         }
 
         private static void ApplyAvcs(AvcVersion[]         avcs,

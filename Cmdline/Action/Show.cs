@@ -35,7 +35,7 @@ namespace CKAN.CmdLine
             var registry = RegistryManager.Instance(instance, repoData).registry;
             foreach (string modName in options.modules)
             {
-                (InstalledModule?, CkanModule?) toShow = (null, null);
+                (InstalledModule?, ReleaseDto?) toShow = (null, null);
                 if (registry.InstalledModule(modName) is InstalledModule instModule)
                 {
                     // Show the installed module
@@ -45,7 +45,7 @@ namespace CKAN.CmdLine
                                                     instance.VersionCriteria())
                                  .SingleOrDefault(mod => mod.name       == modName
                                                       || mod.identifier == modName)
-                         is CkanModule module)
+                         is ReleaseDto module)
                 {
                     // Fall back to exact match in the available modules, if any,
                     // either by "name" (the user-friendly display name) or by identifier
@@ -71,8 +71,8 @@ namespace CKAN.CmdLine
                                            .Where(m => !instMods.Any(im => im.identifier == m.identifier))
                                            .ToArray();
                     // Collect all matches in (InstalledModule?, CkanModule?) tuples so we can present one prompt for all
-                    var both = instMods.Select(im => ((InstalledModule?)im, (CkanModule?)null))
-                                       .Concat(uninstMods.Select(m => ((InstalledModule?)null, (CkanModule?)m)))
+                    var both = instMods.Select(im => ((InstalledModule?)im, (ReleaseDto?)null))
+                                       .Concat(uninstMods.Select(m => ((InstalledModule?)null, (ReleaseDto?)m)))
                                        .ToArray();
 
                     // Display the results of the search.
@@ -99,7 +99,7 @@ namespace CKAN.CmdLine
                         }
                         break;
 
-                    case (_, CkanModule m):
+                    case (_, ReleaseDto m):
                         combined_exit_code = CombineExitCodes(combined_exit_code,
                                                               ShowMod(m, options));
                         if (options.with_versions)
@@ -156,7 +156,7 @@ namespace CKAN.CmdLine
         /// </summary>
         /// <returns>Success status.</returns>
         /// <param name="module">The module to show.</param>
-        private int ShowMod(CkanModule module, ShowOptions opts)
+        private int ShowMod(ReleaseDto module, ShowOptions opts)
         {
             if (!opts.without_description)
             {
@@ -308,7 +308,7 @@ namespace CKAN.CmdLine
             {
                 // Compute the CKAN filename.
                 string file_uri_hash = NetFileCache.CreateURLHash(url);
-                string file_name = CkanModule.StandardName(module.identifier, module.version);
+                string file_name = ReleaseDto.StandardName(module.identifier, module.version);
 
                 user.RaiseMessage("");
                 user.RaiseMessage(Properties.Resources.ShowFileName, file_uri_hash + "-" + file_name);
@@ -331,12 +331,12 @@ namespace CKAN.CmdLine
             return a == Exit.OK ? b : a;
         }
 
-        private void ShowVersionTable(CKAN.GameInstance inst, IReadOnlyCollection<CkanModule> modules)
+        private void ShowVersionTable(CKAN.GameInstance inst, IReadOnlyCollection<ReleaseDto> modules)
         {
             var versions     = modules.Select(m => m.version.ToString()).ToList();
             var gameVersions = modules.Select(m =>
             {
-                CkanModule.GetMinMaxVersions(new List<CkanModule>() { m }, out _, out _,
+                ReleaseDto.GetMinMaxVersions(new List<ReleaseDto>() { m }, out _, out _,
                                              out GameVersion? minKsp, out GameVersion? maxKsp);
                 return GameVersionRange.VersionSpan(inst.Game,
                                                     minKsp ?? GameVersion.Any,

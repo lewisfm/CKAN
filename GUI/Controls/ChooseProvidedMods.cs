@@ -24,7 +24,7 @@ namespace CKAN.GUI
 
         [ForbidGUICalls]
         public void LoadProviders(string           message,
-                                  List<CkanModule> modules,
+                                  List<ReleaseDto> modules,
                                   NetModuleCache   cache,
                                   IConfiguration   config)
         {
@@ -59,9 +59,9 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        public CkanModule? Wait()
+        public ReleaseDto? Wait()
         {
-            task = new TaskCompletionSource<CkanModule?>();
+            task = new TaskCompletionSource<ReleaseDto?>();
             return task.Task.Result;
         }
 
@@ -99,10 +99,10 @@ namespace CKAN.GUI
             task?.SetResult(
                 ChooseProvidedModsListView.CheckedItems
                                           .OfType<ListViewItem>()
-                                          .Select(item => item?.Tag as CkanModule)
+                                          .Select(item => item?.Tag as ReleaseDto)
                                           .FirstOrDefault());
         }
 
-        private TaskCompletionSource<CkanModule?>? task;
+        private TaskCompletionSource<ReleaseDto?>? task;
     }
 }

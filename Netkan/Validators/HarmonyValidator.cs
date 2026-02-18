@@ -23,7 +23,7 @@ namespace CKAN.NetKAN.Validators
         public void Validate(Metadata metadata)
         {
             JObject    json = metadata.AllJson;
-            CkanModule mod  = CkanModule.FromJson(json.ToString());
+            ReleaseDto mod  = ReleaseDto.FromJson(json.ToString());
             // The Harmony2 module is allowed to install a Harmony DLL;
             // anybody else must have "provides":["Harmony1"] to do so
             if (_game.ShortName == "KSP" && !mod.IsDLC && mod.identifier != "Harmony2")

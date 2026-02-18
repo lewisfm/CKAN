@@ -417,7 +417,7 @@ namespace CKAN.GUI
                 foreach (var change in upgrades)
                 {
                     change.targetMod = upgradeable.TryGetValue(change.Mod.identifier,
-                                                               out CkanModule? allowedMod)
+                                                               out ReleaseDto? allowedMod)
                                            // Upgrade to the version the registry says we should
                                            ? allowedMod
                                            // Not upgradeable!
@@ -461,7 +461,7 @@ namespace CKAN.GUI
         /// 2. Mapping from conflicting mods to description of the conflict
         /// 3. Descriptions of all conflicts
         /// </returns>
-        public Tuple<ICollection<ModChange>, Dictionary<CkanModule, string>, List<string>> ComputeFullChangeSetFromUserChangeSet(
+        public Tuple<ICollection<ModChange>, Dictionary<ReleaseDto, string>, List<string>> ComputeFullChangeSetFromUserChangeSet(
             IRegistryQuerier         registry,
             HashSet<ModChange>       changeSet,
             IGame                    game,
@@ -476,9 +476,9 @@ namespace CKAN.GUI
                                                                       grp.Select(repl => new SelectionReason.Replacement(repl.ToReplace)),
                                                                       coreConfig)));
 
-            var toInstall     = new List<CkanModule>();
-            var toRemove      = new HashSet<CkanModule>();
-            var extraInstalls = new HashSet<CkanModule>();
+            var toInstall     = new List<ReleaseDto>();
+            var toRemove      = new HashSet<ReleaseDto>();
+            var extraInstalls = new HashSet<ReleaseDto>();
             foreach (var change in changeSet)
             {
                 switch (change.ChangeType)
@@ -518,10 +518,10 @@ namespace CKAN.GUI
             {
                 if (!changeSet.Any(ch => ch.ChangeType == GUIModChangeType.Replace
                                          && ch.Mod.identifier == dependent)
-                    && installedModules.TryGetValue(dependent, out CkanModule? depMod)
+                    && installedModules.TryGetValue(dependent, out ReleaseDto? depMod)
                     && (registry.GetModuleByVersion(depMod.identifier, depMod.version)
                         ?? registry.InstalledModule(dependent)?.Module)
-                        is CkanModule modByVer)
+                        is ReleaseDto modByVer)
                 {
                     changeSet.Add(new ModChange(modByVer, GUIModChangeType.Remove,
                                                 new SelectionReason.DependencyRemoved(),
@@ -532,7 +532,7 @@ namespace CKAN.GUI
 
             foreach (var im in registry.FindRemovableAutoInstalled(
                 InstalledAfterChanges(registry, changeSet).ToArray(),
-                Array.Empty<CkanModule>(), game, stabilityTolerance, version))
+                Array.Empty<ReleaseDto>(), game, stabilityTolerance, version))
             {
                 changeSet.Add(new ModChange(im.Module, GUIModChangeType.Remove, new SelectionReason.NoLongerUsed(),
                                             coreConfig));
@@ -545,7 +545,7 @@ namespace CKAN.GUI
                                                     registry, game, version);
 
             // Replace Install entries in changeset with the ones from resolver to get all the reasons
-            return new Tuple<ICollection<ModChange>, Dictionary<CkanModule, string>, List<string>>(
+            return new Tuple<ICollection<ModChange>, Dictionary<ReleaseDto, string>, List<string>>(
                 changeSet.Where(ch => !(ch.ChangeType is GUIModChangeType.Install
                                         // Leave in replacements
                                         && !ch.Reasons.Any(r => r is SelectionReason.Replacement)))

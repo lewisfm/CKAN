@@ -32,11 +32,11 @@ namespace Tests.Core.Net
         {
             var user = new NullUser();
 
-            var repos = new SortedDictionary<string, Repository>()
+            var repos = new SortedDictionary<string, RepositoryDto>()
             {
                 {
                     "testRepo",
-                    new Repository("testRepo", TestData.TestKANZip())
+                    new RepositoryDto("testRepo", TestData.TestKANZip())
                 }
             };
 
@@ -130,7 +130,7 @@ namespace Tests.Core.Net
                                                                      string[]  correctURLs)
         {
             // Arrange
-            var group = moduleJsons.Select(CkanModule.FromJson)
+            var group = moduleJsons.Select(ReleaseDto.FromJson)
                                    .ToHashSet();
             var downloader = new NetAsyncModulesDownloader(new NullUser(), cache!);
 
@@ -289,7 +289,7 @@ namespace Tests.Core.Net
                                                             ""version"":    ""1.0"",
                                                             ""download"":   ""{p}""
                                                         }}")
-                                                    .Select(CkanModule.FromJson)
+                                                    .Select(ReleaseDto.FromJson)
                                                     .ToArray();
                 var badURLs    = failCases.Select(TestData.DataFile)
                                           .Select(Path.GetFullPath)
@@ -300,7 +300,7 @@ namespace Tests.Core.Net
                 // Act / Assert
                 var exc = Assert.Throws<ModuleDownloadErrorsKraken>(() =>
                 {
-                    var gotModules = downloader.ModulesAsTheyFinish(Array.Empty<CkanModule>(),
+                    var gotModules = downloader.ModulesAsTheyFinish(Array.Empty<ReleaseDto>(),
                                                                     modules)
                                                .ToArray();
                 });

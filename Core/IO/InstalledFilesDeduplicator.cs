@@ -155,7 +155,7 @@ namespace CKAN.IO
                         }
                     }
                     user.RaiseMessage(Properties.Resources.DoneDeduplicatingFiles,
-                                      CkanModule.FmtSize(dupSize));
+                                      ReleaseDto.FmtSize(dupSize));
                 }
                 else
                 {

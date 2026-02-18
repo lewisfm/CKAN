@@ -20,9 +20,9 @@ namespace CKAN.GUI
     #endif
     public sealed class GUIMod : INotifyPropertyChanged
     {
-        private CkanModule       Mod                 { get; set; }
-        public  CkanModule?      LatestCompatibleMod { get; private set; }
-        public  CkanModule?      LatestAvailableMod  { get; private set; }
+        private ReleaseDto       Mod                 { get; set; }
+        public  ReleaseDto?      LatestCompatibleMod { get; private set; }
+        public  ReleaseDto?      LatestAvailableMod  { get; private set; }
         public  InstalledModule? InstalledMod        { get; private set; }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace CKAN.GUI
         /// null otherwise.
         /// Used for generating this mod's part of the change set.
         /// </summary>
-        public CkanModule? SelectedMod
+        public ReleaseDto? SelectedMod
         {
             get => selectedMod;
             set
@@ -42,7 +42,7 @@ namespace CKAN.GUI
                 }
             }
         }
-        private CkanModule? selectedMod = null;
+        private ReleaseDto? selectedMod = null;
 
         /// <summary>
         /// Notify listeners when certain properties change.
@@ -173,7 +173,7 @@ namespace CKAN.GUI
         /// <param name="incompatible">If true, mark this module as incompatible</param>
         /// <param name="hideEpochs">If true, remove the epoch from the versions</param>
         /// <param name="hideV">If true, remove 'v' prefix from the versions</param>
-        public GUIMod(CkanModule               mod,
+        public GUIMod(ReleaseDto               mod,
                       RepositoryDataManager    repoDataMgr,
                       IRegistryQuerier         registry,
                       StabilityToleranceConfig stabilityTolerance,
@@ -244,7 +244,7 @@ namespace CKAN.GUI
                 LatestVersion = "-";
             }
 
-            SearchableIdentifier = CkanModule.nonAlphaNums.Replace(Identifier, "");
+            SearchableIdentifier = ReleaseDto.nonAlphaNums.Replace(Identifier, "");
 
             Mod           = mod;
 
@@ -261,8 +261,8 @@ namespace CKAN.GUI
                                            .ToArray());
 
             HasReplacement = registry.GetReplacement(mod, stabilityTolerance, instance.VersionCriteria()) != null;
-            DownloadSize   = mod.download_size == 0 ? Properties.Resources.GUIModNSlashA : CkanModule.FmtSize(mod.download_size);
-            InstallSize    = mod.install_size  == 0 ? Properties.Resources.GUIModNSlashA : CkanModule.FmtSize(mod.install_size);
+            DownloadSize   = mod.download_size == 0 ? Properties.Resources.GUIModNSlashA : ReleaseDto.FmtSize(mod.download_size);
+            InstallSize    = mod.install_size  == 0 ? Properties.Resources.GUIModNSlashA : ReleaseDto.FmtSize(mod.install_size);
 
             // Get the Searchables.
             SearchableName        = mod.SearchableName;
@@ -297,7 +297,7 @@ namespace CKAN.GUI
         /// Get the CkanModule associated with this GUIMod.
         /// </summary>
         /// <returns>The CkanModule associated with this GUIMod or null if there is none</returns>
-        public CkanModule Module => Mod;
+        public ReleaseDto Module => Mod;
 
         public IEnumerable<ModChange> GetModChanges(bool upgradeChecked,
                                                     bool replaceChecked,

@@ -2,13 +2,13 @@ namespace CKAN
 {
     public class ModuleReplacement
     {
-        public ModuleReplacement(CkanModule toReplace, CkanModule replaceWith)
+        public ModuleReplacement(ReleaseDto toReplace, ReleaseDto replaceWith)
         {
             ToReplace   = toReplace;
             ReplaceWith = replaceWith;
         }
 
-        public readonly CkanModule ToReplace;
-        public readonly CkanModule ReplaceWith;
+        public readonly ReleaseDto ToReplace;
+        public readonly ReleaseDto ReplaceWith;
     }
 }

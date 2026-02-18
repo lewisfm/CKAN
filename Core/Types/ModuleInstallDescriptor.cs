@@ -322,7 +322,7 @@ namespace CKAN
         /// Throws a BadMetadataKraken if the stanza resulted in no files being returned.
         /// </summary>
         /// <exception cref="BadInstallLocationKraken">Thrown when the installation path is not valid according to the spec.</exception>
-        public IEnumerable<InstallableFile> FindInstallableFiles(CkanModule module,
+        public IEnumerable<InstallableFile> FindInstallableFiles(ReleaseDto module,
                                                                  ZipFile    zipfile,
                                                                  IGame      game)
         {

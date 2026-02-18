@@ -55,7 +55,7 @@ namespace CKAN.GUI
                                  AutoSize  = true,
                                  Dock      = DockStyle.Fill,
                                  Margin    = new Padding(15, 0, 15, 5),
-                                 Text      = CkanModule.FmtSize(kvp.Value),
+                                 Text      = ReleaseDto.FmtSize(kvp.Value),
                                  TextAlign = ContentAlignment.TopRight,
                              },
                              1, row);

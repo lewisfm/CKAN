@@ -19,18 +19,18 @@ using CKAN.Extensions;
 namespace CKAN
 {
     /// <summary>
-    ///     Describes a CKAN module (ie, what's in the CKAN.schema file).
+    ///     Comprehensively describes a release of a CKAN module (ie, what's in the CKAN.schema file).
     /// </summary>
 
     // Base class for both modules (installed via the CKAN) and bundled
     // modules (which are more lightweight)
     [JsonObject(MemberSerialization.OptIn)]
-    public class CkanModule : IEquatable<CkanModule>
+    public class ReleaseDto : IEquatable<ReleaseDto>
     {
 
         #region Fields
 
-        private static readonly ILog log = LogManager.GetLogger(typeof (CkanModule));
+        private static readonly ILog log = LogManager.GetLogger(typeof (ReleaseDto));
 
         // identifier, license, and version are always required, so we know
         // what we've got.
@@ -235,7 +235,7 @@ namespace CKAN
         /// <param name="kind">package, metapackage, or dlc</param>
         /// <param name="comparator">Object used for checking compatibility of this module</param>
         [JsonConstructor]
-        public CkanModule(
+        public ReleaseDto(
             ModuleVersion    spec_version,
             string           identifier,
             string           name,
@@ -269,7 +269,7 @@ namespace CKAN
         /// <summary>
         /// Inflates a CKAN object from a JSON string.
         /// </summary>
-        public CkanModule(string json, IGameComparator? comparator = null)
+        public ReleaseDto(string json, IGameComparator? comparator = null)
         {
             try
             {
@@ -426,7 +426,7 @@ namespace CKAN
         /// <param name="ksp_version">The current KSP version criteria to consider</param>
         /// <returns>A CkanModule</returns>
         /// <exception cref="ModuleNotFoundKraken">Thrown if no matching module could be found</exception>
-        public static CkanModule? FromIDandVersion(IRegistryQuerier     registry,
+        public static ReleaseDto? FromIDandVersion(IRegistryQuerier     registry,
                                                    string               mod,
                                                    GameVersionCriteria? ksp_version)
         {
@@ -456,7 +456,7 @@ namespace CKAN
                       RegexOptions.Compiled);
 
         /// <summary> Generates a CKAN.Meta object given a filename</summary>
-        public static CkanModule FromFile(string filename)
+        public static ReleaseDto FromFile(string filename)
             => FromJson(File.ReadAllText(filename));
 
         public void ToFile(string filename)
@@ -482,15 +482,15 @@ namespace CKAN
         /// Also validates that all required fields are present.
         /// Throws a BadMetaDataKraken if any fields are missing.
         /// </summary>
-        public static CkanModule FromJson(string json)
-            => new CkanModule(json);
+        public static ReleaseDto FromJson(string json)
+            => new ReleaseDto(json);
 
         #endregion
 
         /// <summary>
         /// Returns true if we conflict with the given module.
         /// </summary>
-        public bool ConflictsWith(CkanModule module)
+        public bool ConflictsWith(ReleaseDto module)
             // We never conflict with ourselves, since we can't be installed at
             // the same time as another version of ourselves.
             => module.identifier != identifier
@@ -500,9 +500,9 @@ namespace CKAN
         /// Checks if A conflicts with B, but not if B conflicts with A.
         /// Used by ConflictsWith.
         /// </summary>
-        internal static bool UniConflicts(CkanModule mod1, CkanModule mod2)
+        internal static bool UniConflicts(ReleaseDto mod1, ReleaseDto mod2)
             => mod1?.conflicts?.Any(
-                   conflict => conflict.MatchesAny(new CkanModule[] {mod2}, null, null))
+                   conflict => conflict.MatchesAny(new ReleaseDto[] {mod2}, null, null))
                ?? false;
 
         /// <summary>
@@ -558,15 +558,15 @@ namespace CKAN
 
         public bool IsDLC => kind == ModuleKind.dlc;
 
-        protected bool Equals(CkanModule? other)
+        protected bool Equals(ReleaseDto? other)
             => string.Equals(identifier, other?.identifier) && version.Equals(other?.version);
 
         public override bool Equals(object? obj)
             => obj is not null
                 && (ReferenceEquals(this, obj)
-                    || (obj.GetType() == GetType() && Equals((CkanModule)obj)));
+                    || (obj.GetType() == GetType() && Equals((ReleaseDto)obj)));
 
-        public bool MetadataEquals(CkanModule other)
+        public bool MetadataEquals(ReleaseDto other)
         {
             if ((install == null) != (other.install == null)
                     || (install != null && other.install != null
@@ -677,7 +677,7 @@ namespace CKAN
         public override int GetHashCode()
             => (identifier, version).GetHashCode();
 
-        bool IEquatable<CkanModule>.Equals(CkanModule? other)
+        bool IEquatable<ReleaseDto>.Equals(ReleaseDto? other)
             => Equals(other);
 
         /// <summary>
@@ -776,17 +776,17 @@ namespace CKAN
              : bytes < K*K*K*K ? $"{bytes /K/K/K :N1} GiB"
              :                   $"{bytes /K/K/K/K :N1} TiB";
 
-        public HashSet<CkanModule> GetDownloadsGroup(IEnumerable<CkanModule> modules)
+        public HashSet<ReleaseDto> GetDownloadsGroup(IEnumerable<ReleaseDto> modules)
             => OneDownloadGroupingPass(modules.ToHashSet(), this);
 
-        public static List<HashSet<CkanModule>> GroupByDownloads(IEnumerable<CkanModule> modules)
+        public static List<HashSet<ReleaseDto>> GroupByDownloads(IEnumerable<ReleaseDto> modules)
         {
             // Each module is a vertex, each download URL is an edge
             // We want to group the vertices by transitive connectedness
             // We can go breadth first or depth first
             // Once we encounter a mod, we never have to look at it again
             var unsearched = modules.ToHashSet();
-            var groups = new List<HashSet<CkanModule>>();
+            var groups = new List<HashSet<ReleaseDto>>();
             while (unsearched.Count > 0)
             {
                 groups.Add(OneDownloadGroupingPass(unsearched, unsearched.First()));
@@ -794,10 +794,10 @@ namespace CKAN
             return groups;
         }
 
-        private static HashSet<CkanModule> OneDownloadGroupingPass(HashSet<CkanModule> unsearched,
-                                                                   CkanModule firstModule)
+        private static HashSet<ReleaseDto> OneDownloadGroupingPass(HashSet<ReleaseDto> unsearched,
+                                                                   ReleaseDto firstModule)
         {
-            var searching = new List<CkanModule> { firstModule };
+            var searching = new List<ReleaseDto> { firstModule };
             unsearched.ExceptWith(searching);
             var found = searching.ToHashSet();
             // Breadth first search to find all modules with any URLs in common, transitively
@@ -828,13 +828,13 @@ namespace CKAN
         /// <param name="minGame">Return parameter for the lowest  game version</param>
         /// <param name="maxGame">Return parameter for the highest game version</param>
         public static void GetMinMaxVersions(
-                IEnumerable<CkanModule?> modVersions,
+                IEnumerable<ReleaseDto?> modVersions,
                 out ModuleVersion? minMod,  out ModuleVersion? maxMod,
                 out GameVersion?   minGame, out GameVersion?   maxGame)
         {
             minMod  = maxMod  = null;
             minGame = maxGame = null;
-            foreach (var mod in modVersions.OfType<CkanModule>())
+            foreach (var mod in modVersions.OfType<ReleaseDto>())
             {
                 if (minMod == null || minMod > mod.version)
                 {
@@ -857,17 +857,17 @@ namespace CKAN
             }
         }
 
-        public bool DependsAndConflictsOK(IReadOnlyCollection<CkanModule> others)
+        public bool DependsAndConflictsOK(IReadOnlyCollection<ReleaseDto> others)
             => !BadRelationships(others).Any();
 
-        public IEnumerable<Relationship> BadRelationships(IReadOnlyCollection<CkanModule> others)
+        public IEnumerable<Relationship> BadRelationships(IReadOnlyCollection<ReleaseDto> others)
             => BadRelationships(others,
                                 others.Where(other => other.identifier != identifier).ToArray(),
-                                new CkanModule[] { this });
+                                new ReleaseDto[] { this });
 
-        private IEnumerable<Relationship> BadRelationships(IReadOnlyCollection<CkanModule> others,
-                                                           IReadOnlyCollection<CkanModule> othersMinusSelf,
-                                                           IReadOnlyCollection<CkanModule> selfArray)
+        private IEnumerable<Relationship> BadRelationships(IReadOnlyCollection<ReleaseDto> others,
+                                                           IReadOnlyCollection<ReleaseDto> othersMinusSelf,
+                                                           IReadOnlyCollection<ReleaseDto> selfArray)
             => (depends ?? Enumerable.Empty<RelationshipDescriptor>())
                    .Where(rel => BadDepends(rel, others))
                    .Select(rel => new Relationship(this, RelationshipType.Depends, rel))
@@ -887,7 +887,7 @@ namespace CKAN
                        .Select(rel => new Relationship(other, RelationshipType.Conflicts, rel)))));
 
         private static bool BadDepends(RelationshipDescriptor          dep,
-                                       IReadOnlyCollection<CkanModule> targets)
+                                       IReadOnlyCollection<ReleaseDto> targets)
             => dep.ContainsAny(targets.Select(m => m.identifier)) && !dep.MatchesAny(targets, null, null);
     }
 }

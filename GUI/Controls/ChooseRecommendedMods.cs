@@ -27,17 +27,17 @@ namespace CKAN.GUI
 
         [ForbidGUICalls]
         public void LoadRecommendations(IRegistryQuerier                registry,
-                                        IReadOnlyCollection<CkanModule> toInstall,
-                                        IReadOnlyCollection<CkanModule> toUninstall,
+                                        IReadOnlyCollection<ReleaseDto> toInstall,
+                                        IReadOnlyCollection<ReleaseDto> toUninstall,
                                         GameVersionCriteria             versionCrit,
                                         NetModuleCache                  cache,
                                         IGame                           game,
                                         List<ModuleLabel>               labels,
                                         IConfiguration                  coreConfig,
                                         GUIConfiguration                guiConfig,
-                                        Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-                                        Dictionary<CkanModule, List<string>>              suggestions,
-                                        Dictionary<CkanModule, HashSet<string>>           supporters)
+                                        Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+                                        Dictionary<ReleaseDto, List<string>>              suggestions,
+                                        Dictionary<ReleaseDto, HashSet<string>>           supporters)
         {
             this.registry    = registry;
             this.toInstall   = toInstall;
@@ -68,14 +68,14 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        public HashSet<CkanModule>? Wait()
+        public HashSet<ReleaseDto>? Wait()
         {
             if (Platform.IsMono)
             {
                 // Workaround: make sure the ListView headers are drawn
                 Util.Invoke(this, RecommendedModsListView.EndUpdate);
             }
-            task = new TaskCompletionSource<HashSet<CkanModule>?>();
+            task = new TaskCompletionSource<HashSet<ReleaseDto>?>();
             return task.Task.Result;
         }
 
@@ -119,7 +119,7 @@ namespace CKAN.GUI
 
         private void RecommendedModsListView_ItemChecked(object? sender, ItemCheckedEventArgs? e)
         {
-            var module = e?.Item.Tag as CkanModule;
+            var module = e?.Item.Tag as ReleaseDto;
             if (module?.IsDLC ?? false)
             {
                 if (e != null && e.Item.Checked)
@@ -144,8 +144,8 @@ namespace CKAN.GUI
                     var resolver = new RelationshipResolver(
                         RecommendedModsListView.CheckedItems
                                                .OfType<ListViewItem>()
-                                               .Select(item => item.Tag as CkanModule)
-                                               .OfType<CkanModule>()
+                                               .Select(item => item.Tag as ReleaseDto)
+                                               .OfType<ReleaseDto>()
                                                .Concat(toInstall)
                                                .Distinct(),
                         toUninstall,
@@ -159,7 +159,7 @@ namespace CKAN.GUI
                         // ... so the Items list can contain null!!
                         .OfType<ListViewItem>())
                     {
-                        item.BackColor = item.Tag is CkanModule m && conflicts.ContainsKey(m)
+                        item.BackColor = item.Tag is ReleaseDto m && conflicts.ContainsKey(m)
                             ? Color.LightCoral
                             : Color.Empty;
                     }
@@ -170,7 +170,7 @@ namespace CKAN.GUI
                 {
                     var rows = RecommendedModsListView.Items
                                                       .OfType<ListViewItem>()
-                                                      .Where(item => item.Tag is CkanModule mod
+                                                      .Where(item => item.Tag is ReleaseDto mod
                                                                      && k.unsatisfied.Any(stack =>
                                                                          stack.Any(rr => rr.Contains(mod))));
                     foreach (var row in rows)
@@ -187,9 +187,9 @@ namespace CKAN.GUI
             NetModuleCache                                    cache,
             IGame                                             game,
             ModuleLabel[]                                     uncheckLabels,
-            Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-            Dictionary<CkanModule, List<string>>              suggestions,
-            Dictionary<CkanModule, HashSet<string>>           supporters,
+            Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+            Dictionary<ReleaseDto, List<string>>              suggestions,
+            Dictionary<ReleaseDto, HashSet<string>>           supporters,
             IConfiguration                                    coreConfig)
             => recommendations.Select(kvp => getRecSugItem(cache,
                                                            kvp.Key,
@@ -224,7 +224,7 @@ namespace CKAN.GUI
                    : "";
 
         private static ListViewItem getRecSugItem(NetModuleCache cache,
-                                                  CkanModule     module,
+                                                  ReleaseDto     module,
                                                   string         descrip,
                                                   ListViewGroup  group,
                                                   bool           check,
@@ -306,7 +306,7 @@ namespace CKAN.GUI
         }
 
         private bool NotDLC(ListViewItem item)
-            => item.Tag is CkanModule mod && !mod.IsDLC;
+            => item.Tag is ReleaseDto mod && !mod.IsDLC;
 
         private void RecommendedModsCancelButton_Click(object? sender, EventArgs? e)
         {
@@ -319,19 +319,19 @@ namespace CKAN.GUI
         {
             task?.SetResult(RecommendedModsListView.CheckedItems
                                                    .OfType<ListViewItem>()
-                                                   .Select(item => item.Tag as CkanModule)
-                                                   .OfType<CkanModule>()
+                                                   .Select(item => item.Tag as ReleaseDto)
+                                                   .OfType<ReleaseDto>()
                                                    .ToHashSet());
             RecommendedModsListView.Items.Clear();
             RecommendedModsListView.ItemChecked -= RecommendedModsListView_ItemChecked;
         }
 
         private IRegistryQuerier?               registry;
-        private IReadOnlyCollection<CkanModule> toInstall   = Array.Empty<CkanModule>();
-        private IReadOnlyCollection<CkanModule> toUninstall = Array.Empty<CkanModule>();
+        private IReadOnlyCollection<ReleaseDto> toInstall   = Array.Empty<ReleaseDto>();
+        private IReadOnlyCollection<ReleaseDto> toUninstall = Array.Empty<ReleaseDto>();
         private GameVersionCriteria?            versionCrit;
         private GUIConfiguration?               guiConfig;
         private IGame?                          game;
-        private TaskCompletionSource<HashSet<CkanModule>?>? task;
+        private TaskCompletionSource<HashSet<ReleaseDto>?>? task;
     }
 }

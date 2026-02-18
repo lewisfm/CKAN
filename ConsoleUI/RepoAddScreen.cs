@@ -18,7 +18,7 @@ namespace CKAN.ConsoleUI {
         /// <param name="userAgent">HTTP useragent string to use</param>
         public RepoAddScreen(ConsoleTheme                         theme,
                              IGame                                game,
-                             SortedDictionary<string, Repository> reps,
+                             SortedDictionary<string, RepositoryDto> reps,
                              string?                              userAgent)
             : base(theme, game, reps, "", "", userAgent) { }
 
@@ -39,12 +39,12 @@ namespace CKAN.ConsoleUI {
             // Set priority to end of list
             int prio = 0;
             foreach (var kvp in editList) {
-                Repository r = kvp.Value;
+                RepositoryDto r = kvp.Value;
                 if (r.priority >= prio) {
                     prio = r.priority + 1;
                 }
             }
-            editList.Add(name.Value, new Repository(name.Value, url.Value, prio));
+            editList.Add(name.Value, new RepositoryDto(name.Value, url.Value, prio));
         }
 
     }

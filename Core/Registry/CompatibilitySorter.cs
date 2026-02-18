@@ -29,8 +29,8 @@ namespace CKAN
         /// <param name="dlc">Collection of installed DLCs</param>
         public CompatibilitySorter(StabilityToleranceConfig                         stabilityTolerance,
                                    GameVersionCriteria                              crit,
-                                   IEnumerable<Dictionary<string, AvailableModule>> available,
-                                   IDictionary<string, AvailableModule[]>           providers,
+                                   IEnumerable<Dictionary<string, ModuleDto>> available,
+                                   IDictionary<string, ModuleDto[]>           providers,
                                    IDictionary<string, InstalledModule>             installed,
                                    IReadOnlyCollection<string>                      dlls,
                                    IDictionary<string, UnmanagedModuleVersion>      dlc)
@@ -53,16 +53,16 @@ namespace CKAN
 
             Compatible = groups.FirstOrDefault(tuple => tuple.Item1 == true)
                                ?.Item2
-                               ?? new ConcurrentDictionary<string, AvailableModule>();
+                               ?? new ConcurrentDictionary<string, ModuleDto>();
 
             Incompatible = groups.FirstOrDefault(tuple => tuple.Item1 == false)
                                  ?.Item2
-                                 ?? new ConcurrentDictionary<string, AvailableModule>();
+                                 ?? new ConcurrentDictionary<string, ModuleDto>();
 
             // Mods that might be compatible or incompatible based on their dependencies
             var indeterminate = groups.FirstOrDefault(tuple => tuple.Item1 == null)
                                   ?.Item2
-                                  ?? new ConcurrentDictionary<string, AvailableModule>();
+                                  ?? new ConcurrentDictionary<string, ModuleDto>();
 
             // Sort out the complexly [in]compatible mods
             indeterminate.AsParallel()
@@ -79,19 +79,19 @@ namespace CKAN
         /// <summary>
         /// Mods that are compatible with our versions
         /// </summary>
-        public readonly ConcurrentDictionary<string, AvailableModule> Compatible;
+        public readonly ConcurrentDictionary<string, ModuleDto> Compatible;
 
         /// <summary>
         /// The least stable category of modules to consider
         /// </summary>
         public readonly StabilityToleranceConfig StabilityTolerance;
 
-        public IReadOnlyCollection<CkanModule> LatestCompatible
+        public IReadOnlyCollection<ReleaseDto> LatestCompatible
         {
             get
             {
                 latestCompatible ??= Compatible.Values.Select(avail => avail.Latest(StabilityTolerance, CompatibleVersions))
-                                                      .OfType<CkanModule>()
+                                                      .OfType<ReleaseDto>()
                                                       .ToList();
                 return latestCompatible;
             }
@@ -100,14 +100,14 @@ namespace CKAN
         /// <summary>
         /// Mods that are incompatible with our versions
         /// </summary>
-        public readonly ConcurrentDictionary<string, AvailableModule> Incompatible;
+        public readonly ConcurrentDictionary<string, ModuleDto> Incompatible;
 
-        public IReadOnlyCollection<CkanModule> LatestIncompatible
+        public IReadOnlyCollection<ReleaseDto> LatestIncompatible
         {
             get
             {
                 latestIncompatible ??= Incompatible.Values.Select(avail => avail.Latest(StabilityTolerance))
-                                                          .OfType<CkanModule>()
+                                                          .OfType<ReleaseDto>()
                                                           .ToList();
                 return latestIncompatible;
             }
@@ -117,8 +117,8 @@ namespace CKAN
         private readonly IReadOnlyCollection<string>                 dlls;
         private readonly IDictionary<string, UnmanagedModuleVersion> dlc;
 
-        private List<CkanModule>? latestCompatible;
-        private List<CkanModule>? latestIncompatible;
+        private List<ReleaseDto>? latestCompatible;
+        private List<ReleaseDto>? latestIncompatible;
 
         /// <summary>
         /// Filter the provides mapping by compatibility
@@ -128,12 +128,12 @@ namespace CKAN
         /// <returns>
         /// Mapping from identifiers to compatible mods providing those identifiers
         /// </returns>
-        private static Dictionary<string, HashSet<AvailableModule>> CompatibleProviders(
+        private static Dictionary<string, HashSet<ModuleDto>> CompatibleProviders(
             GameVersionCriteria                    crit,
-            IDictionary<string, AvailableModule[]> providers)
+            IDictionary<string, ModuleDto[]> providers)
             => providers
                 .AsParallel()
-                .Select(kvp => new KeyValuePair<string, HashSet<AvailableModule>>(
+                .Select(kvp => new KeyValuePair<string, HashSet<ModuleDto>>(
                     kvp.Key,
                     kvp.Value.Where(availMod => availMod.AllAvailable()
                                                         .Any(ckm => !ckm.IsDLC
@@ -143,14 +143,14 @@ namespace CKAN
                 .Where(kvp => kvp.Value.Count > 0)
                 .ToDictionary();
 
-        private IEnumerable<Tuple<bool?, ConcurrentDictionary<string, AvailableModule>>> getCompatGroups(
-            IEnumerable<Dictionary<string, AvailableModule>> available)
+        private IEnumerable<Tuple<bool?, ConcurrentDictionary<string, ModuleDto>>> getCompatGroups(
+            IEnumerable<Dictionary<string, ModuleDto>> available)
             // Merge AvailableModules with duplicate identifiers
             => available.SelectMany(dict => dict)
                         .GroupBy(kvp => kvp.Key,
                                  kvp => kvp.Value)
                         .ToDictionary(grp => grp.Key,
-                                      AvailableModule.Merge)
+                                      ModuleDto.Merge)
                         // Group into trivially [in]compatible (false/true) and indeterminate (null)
                         .AsParallel()
                         .GroupBy(kvp => kvp.Value.AllAvailable()
@@ -163,7 +163,7 @@ namespace CKAN
                                                  ? true
                                                  // Need to investigate this one more later
                                                  : (bool?)null)
-                        .Select(grp => new Tuple<bool?, ConcurrentDictionary<string, AvailableModule>>(
+                        .Select(grp => new Tuple<bool?, ConcurrentDictionary<string, ModuleDto>>(
                                            grp.Key, grp.ToConcurrentDictionary()));
 
         /// <summary>
@@ -175,8 +175,8 @@ namespace CKAN
         /// <param name="providers">Mapping from identifiers to mods providing those identifiers</param>
         /// <param name="investigating">Mods for which we have an active call to CheckDepends right now in the call stack, used to avoid infinite recursion on circular deps</param>
         private void CheckDepends(string                                       identifier,
-                                  AvailableModule                              am,
-                                  Dictionary<string, HashSet<AvailableModule>> providers,
+                                  ModuleDto                              am,
+                                  Dictionary<string, HashSet<ModuleDto>> providers,
                                   Stack<string>                                investigating)
         {
             if (Compatible.ContainsKey(identifier) || Incompatible.ContainsKey(identifier))
@@ -185,7 +185,7 @@ namespace CKAN
                 return;
             }
             investigating.Push(identifier);
-            foreach (CkanModule m in am.AllAvailable().Where(m => m.IsCompatible(CompatibleVersions)))
+            foreach (ReleaseDto m in am.AllAvailable().Where(m => m.IsCompatible(CompatibleVersions)))
             {
                 log.DebugFormat("What about {0}?", m.version);
                 bool installable = true;
@@ -210,7 +210,7 @@ namespace CKAN
                                 .SelectMany(ident => providers[ident])
                                 .Distinct();
 
-                            foreach (AvailableModule provider in candidates)
+                            foreach (ModuleDto provider in candidates)
                             {
                                 string ident = provider.AllAvailable().First().identifier;
                                 log.DebugFormat("Checking depends: {0}", ident);

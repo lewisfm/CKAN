@@ -37,7 +37,7 @@ namespace Tests.NetKAN.Validators
             var mHttp = new Mock<IHttpService>();
             var mModuleService = new Mock<IModuleService>();
 
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(true);
 
             var sut = new CkanValidator(mHttp.Object, mModuleService.Object, new KerbalSpaceProgram(), null);
@@ -62,7 +62,7 @@ namespace Tests.NetKAN.Validators
             var mHttp = new Mock<IHttpService>();
             var mModuleService = new Mock<IModuleService>();
 
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(true);
 
             var sut = new CkanValidator(mHttp.Object, mModuleService.Object, new KerbalSpaceProgram(), null);
@@ -85,7 +85,7 @@ namespace Tests.NetKAN.Validators
             var mHttp = new Mock<IHttpService>();
             var mModuleService = new Mock<IModuleService>();
 
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(true);
 
             var sut = new CkanValidator(mHttp.Object, mModuleService.Object, new KerbalSpaceProgram(), null);
@@ -111,7 +111,7 @@ namespace Tests.NetKAN.Validators
 
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<CkanModule>(), It.IsAny<string>()))
+            mModuleService.Setup(i => i.HasInstallableFiles(It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(false);
 
             var netkan = new JObject();

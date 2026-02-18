@@ -11,6 +11,6 @@ namespace CKAN
         /// Returns true if the given module is compatible with the supplied
         /// gameVersion, false otherwise.
         /// </summary>
-        bool Compatible(GameVersionCriteria gameVersion, CkanModule module);
+        bool Compatible(GameVersionCriteria gameVersion, ReleaseDto module);
     }
 }

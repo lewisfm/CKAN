@@ -119,11 +119,11 @@ namespace CKAN.GUI
                             CacheSummary.Text = cacheFreeSpace.HasValue
                                 ? string.Format(Properties.Resources.SettingsDialogSummmary,
                                                 cacheFileCount,
-                                                CkanModule.FmtSize(cacheSize),
-                                                CkanModule.FmtSize(cacheFreeSpace.Value))
+                                                ReleaseDto.FmtSize(cacheSize),
+                                                ReleaseDto.FmtSize(cacheFreeSpace.Value))
                                 : string.Format(Properties.Resources.SettingsDialogSummmaryFreeSpaceUnknown,
                                                 cacheFileCount,
-                                                CkanModule.FmtSize(cacheSize));
+                                                ReleaseDto.FmtSize(cacheSize));
                             CacheSummary.ForeColor   = SystemColors.ControlText;
                             OpenCacheButton.Enabled  = true;
                             ClearCacheButton.Enabled = (cacheSize > 0);
@@ -323,7 +323,7 @@ namespace CKAN.GUI
                 var confirmationText = string.Format(
                     Properties.Resources.SettingsDialogDeleteConfirm,
                     cacheFileCount,
-                    CkanModule.FmtSize(cacheSize));
+                    ReleaseDto.FmtSize(cacheSize));
 
                 if (deleteConfirmationDialog.ShowYesNoDialog(this, confirmationText) == DialogResult.Yes)
                 {
@@ -359,7 +359,7 @@ namespace CKAN.GUI
         public bool RepositoryMoved   { get; private set; } = false;
 
         private void RefreshReposListBox(bool        saveChanges = true,
-                                         Repository? toSelect    = null)
+                                         RepositoryDto? toSelect    = null)
         {
             ReposListBox.BeginUpdate();
             ReposListBox.Items.Clear();
@@ -425,7 +425,7 @@ namespace CKAN.GUI
             YesNoDialog deleteConfirmationDialog = new YesNoDialog();
             if (//ReposListBox.SelectedItems is [{Tag: Repository repo}, ..]
                 ReposListBox.SelectedItems.Count > 0
-                && ReposListBox.SelectedItems[0] is {Tag: Repository repo}
+                && ReposListBox.SelectedItems[0] is {Tag: RepositoryDto repo}
                 && deleteConfirmationDialog.ShowYesNoDialog(this,
                     string.Format(Properties.Resources.SettingsDialogRepoDeleteConfirm,
                                   repo.name),
@@ -445,7 +445,7 @@ namespace CKAN.GUI
         {
             if (manager?.CurrentInstance != null
                 && RepositoryList.DefaultRepositories(manager.CurrentInstance.Game, userAgent)?.repositories
-                   is Repository[] repos)
+                   is RepositoryDto[] repos)
             {
                 var dialog = new NewRepoDialog(repos);
                 if (dialog.ShowDialog(this) == DialogResult.OK)
@@ -457,7 +457,7 @@ namespace CKAN.GUI
                         user.RaiseError(Properties.Resources.SettingsDialogRepoAddDuplicateURL, repo.uri);
                         return;
                     }
-                    if (registry.Repositories.TryGetValue(repo.name, out Repository? existing))
+                    if (registry.Repositories.TryGetValue(repo.name, out RepositoryDto? existing))
                     {
                         repo.priority = existing.priority;
                         registry.RepositoriesRemove(repo.name);
@@ -481,11 +481,11 @@ namespace CKAN.GUI
                 && ReposListBox.SelectedIndices[0] > 0
                 //&& ReposListBox.SelectedItems is [{Tag: Repository selected}, ..]
                 && ReposListBox.SelectedItems.Count > 0
-                && ReposListBox.SelectedItems[0] is {Tag: Repository selected})
+                && ReposListBox.SelectedItems[0] is {Tag: RepositoryDto selected})
             {
                 var prev = ReposListBox.Items.OfType<ListViewItem>()
-                                             .Select(item => item.Tag as Repository)
-                                             .OfType<Repository>()
+                                             .Select(item => item.Tag as RepositoryDto)
+                                             .OfType<RepositoryDto>()
                                              .FirstOrDefault(r => r.priority == selected.priority - 1);
                 --selected.priority;
                 RepositoryMoved = true;
@@ -505,11 +505,11 @@ namespace CKAN.GUI
                 && i < ReposListBox.Items.Count - 1
                 //&& ReposListBox.SelectedItems is [{Tag: Repository selected}]
                 && ReposListBox.SelectedItems.Count > 0
-                && ReposListBox.SelectedItems[0] is {Tag: Repository selected})
+                && ReposListBox.SelectedItems[0] is {Tag: RepositoryDto selected})
             {
                 var next = ReposListBox.Items.Cast<ListViewItem>()
-                                             .Select(item => item.Tag as Repository)
-                                             .OfType<Repository>()
+                                             .Select(item => item.Tag as RepositoryDto)
+                                             .OfType<RepositoryDto>()
                                              .FirstOrDefault(r => r.priority == selected.priority + 1);
                 ++selected.priority;
                 RepositoryMoved = true;

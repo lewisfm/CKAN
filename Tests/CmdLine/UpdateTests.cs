@@ -28,7 +28,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { new Repository("test", TestData.TestKANTarGz()) }))
+                                                           new RepositoryDto[] { new RepositoryDto("test", TestData.TestKANTarGz()) }))
             {
                 // Set our instance explicitly because GameInstanceManager.LoadInstances
                 // won't know about our custom IGame
@@ -75,7 +75,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { new Repository("test", TestData.TestKANTarGz()) }))
+                                                           new RepositoryDto[] { new RepositoryDto("test", TestData.TestKANTarGz()) }))
             {
                 // Not an ICommand because it can update a repo without a game instance
                 var sut  = new Update(repoData.Manager, user, manager);

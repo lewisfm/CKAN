@@ -16,14 +16,14 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP())
-            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<Repository, RepositoryData>
+            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<RepositoryDto, RepositoryData>
             {
                 { repo, RepositoryData.FromJson(TestData.TestRepository(), null)! },
             }))
             using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                         new Repository[] { repo }))
+                                                         new RepositoryDto[] { repo }))
             {
                 ICommand sut  = new Search(repoData.Manager, user);
                 var      opts = new SearchOptions()
@@ -57,14 +57,14 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP())
-            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<Repository, RepositoryData>
+            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<RepositoryDto, RepositoryData>
             {
                 { repo, RepositoryData.FromJson(TestData.TestRepository(), null)! },
             }))
             using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                         new Repository[] { repo }))
+                                                         new RepositoryDto[] { repo }))
             {
                 ICommand sut  = new Search(repoData.Manager, user);
                 var      opts = new SearchOptions()
@@ -95,14 +95,14 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP())
-            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<Repository, RepositoryData>
+            using (var repoData = new TemporaryRepositoryData(user, new Dictionary<RepositoryDto, RepositoryData>
             {
                 { repo, RepositoryData.FromJson(TestData.TestRepository(), null)! },
             }))
             using (var regMgr = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                         new Repository[] { repo }))
+                                                         new RepositoryDto[] { repo }))
             {
                 ICommand sut  = new Search(repoData.Manager, user);
                 var      opts = new SearchOptions()

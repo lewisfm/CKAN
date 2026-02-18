@@ -31,7 +31,7 @@ namespace CKAN.GUI
 
         public void LoadChangeset(List<ModChange>                 changes,
                                   List<ModuleLabel>               AlertLabels,
-                                  Dictionary<CkanModule, string>? conflicts)
+                                  Dictionary<ReleaseDto, string>? conflicts)
         {
             changeset = changes;
             ConfirmChangesButton.Enabled = conflicts == null || conflicts.Count == 0;
@@ -43,9 +43,9 @@ namespace CKAN.GUI
                        ?? new List<ChangesetRow>());
         }
 
-        public CkanModule? SelectedItem => SelectedRow?.Change.Mod;
+        public ReleaseDto? SelectedItem => SelectedRow?.Change.Mod;
 
-        public event Action<CkanModule?>? OnSelectedItemsChanged;
+        public event Action<ReleaseDto?>? OnSelectedItemsChanged;
         public event Action<ModChange>?   OnRemoveItem;
 
         public event Action<List<ModChange>?>? OnConfirmChanges;
@@ -139,7 +139,7 @@ namespace CKAN.GUI
     {
         public ChangesetRow(ModChange                       change,
                             List<ModuleLabel>               alertLabels,
-                            Dictionary<CkanModule, string>? conflicts)
+                            Dictionary<ReleaseDto, string>? conflicts)
         {
             Change = change;
             if (Main.Instance?.CurrentInstance?.Game is IGame game)

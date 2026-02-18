@@ -11,21 +11,21 @@ namespace CKAN.NetKAN.Services
 {
     internal interface IModuleService
     {
-        Tuple<ZipEntry, bool>? FindInternalAvc(CkanModule module, ZipFile zipfile, string internalFilePath);
-        AvcVersion? GetInternalAvc(CkanModule module, string filePath, string? internalFilePath = null);
-        JObject? GetInternalCkan(CkanModule module, string zipPath);
-        bool HasInstallableFiles(CkanModule module, string filePath);
+        Tuple<ZipEntry, bool>? FindInternalAvc(ReleaseDto module, ZipFile zipfile, string internalFilePath);
+        AvcVersion? GetInternalAvc(ReleaseDto module, string filePath, string? internalFilePath = null);
+        JObject? GetInternalCkan(ReleaseDto module, string zipPath);
+        bool HasInstallableFiles(ReleaseDto module, string filePath);
 
-        IEnumerable<InstallableFile> GetConfigFiles(CkanModule module, ZipFile zip);
-        IEnumerable<InstallableFile> GetPlugins(CkanModule module, ZipFile zip);
-        IEnumerable<InstallableFile> GetCrafts(CkanModule module, ZipFile zip);
-        IEnumerable<InstallableFile> GetSourceCode(CkanModule module, ZipFile zip);
+        IEnumerable<InstallableFile> GetConfigFiles(ReleaseDto module, ZipFile zip);
+        IEnumerable<InstallableFile> GetPlugins(ReleaseDto module, ZipFile zip);
+        IEnumerable<InstallableFile> GetCrafts(ReleaseDto module, ZipFile zip);
+        IEnumerable<InstallableFile> GetSourceCode(ReleaseDto module, ZipFile zip);
 
-        IEnumerable<string> GetInternalSpaceWarpInfos(CkanModule module,
+        IEnumerable<string> GetInternalSpaceWarpInfos(ReleaseDto module,
                                                       ZipFile    zip,
                                                       string?    internalFilePath = null);
 
-        IEnumerable<ZipEntry> FileSources(CkanModule module, ZipFile zip);
-        IEnumerable<string> FileDestinations(CkanModule module, string filePath);
+        IEnumerable<ZipEntry> FileSources(ReleaseDto module, ZipFile zip);
+        IEnumerable<string> FileDestinations(ReleaseDto module, string filePath);
     }
 }

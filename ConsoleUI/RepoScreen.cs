@@ -22,7 +22,7 @@ namespace CKAN.ConsoleUI {
         /// <param name="userAgent">HTTP useragent string to use</param>
         protected RepoScreen(ConsoleTheme                         theme,
                              IGame                                game,
-                             SortedDictionary<string, Repository> reps,
+                             SortedDictionary<string, RepositoryDto> reps,
                              string                               initName,
                              string                               initUrl,
                              string?                              userAgent)
@@ -153,7 +153,7 @@ namespace CKAN.ConsoleUI {
         /// <summary>
         /// Temporary list of Repository objects
         /// </summary>
-        protected SortedDictionary<string, Repository> editList;
+        protected SortedDictionary<string, RepositoryDto> editList;
 
         private static int labelWidth => Math.Max(8, Math.Max(
             Properties.Resources.RepoNameLabel.Length,

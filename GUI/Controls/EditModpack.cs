@@ -43,7 +43,7 @@ namespace CKAN.GUI
         }
 
         [ForbidGUICalls]
-        public void LoadModule(CkanModule module, IRegistryQuerier registry)
+        public void LoadModule(ReleaseDto module, IRegistryQuerier registry)
         {
             this.module = module;
             Util.Invoke(this, () =>
@@ -88,7 +88,7 @@ namespace CKAN.GUI
             return task.Task.Result;
         }
 
-        private void LoadRelationships(CkanModule module, IRegistryQuerier registry)
+        private void LoadRelationships(ReleaseDto module, IRegistryQuerier registry)
         {
             module.depends ??= new List<RelationshipDescriptor>();
             module.recommends ??= new List<RelationshipDescriptor>();
@@ -356,10 +356,10 @@ namespace CKAN.GUI
             }
         }
 
-        private CkanModule ApplyCheckboxes(CkanModule input)
+        private ReleaseDto ApplyCheckboxes(ReleaseDto input)
             => ApplyIncludeOptRelsCheckbox(ApplyVersionsCheckbox(input));
 
-        private CkanModule ApplyVersionsCheckbox(CkanModule input)
+        private ReleaseDto ApplyVersionsCheckbox(ReleaseDto input)
         {
             if (IncludeVersionsCheckbox.Checked)
             {
@@ -371,7 +371,7 @@ namespace CKAN.GUI
                 // BUT we don't want to purge them from the main module object
                 // in case the user changes the checkbox after cancelling out of the
                 // save popup. So we create a new CkanModule instead.
-                var newMod = CkanModule.FromJson(input.ToJson());
+                var newMod = ReleaseDto.FromJson(input.ToJson());
                 foreach (var rels in new List<List<RelationshipDescriptor>?>()
                     {
                         newMod.depends,
@@ -393,7 +393,7 @@ namespace CKAN.GUI
             }
         }
 
-        private CkanModule ApplyIncludeOptRelsCheckbox(CkanModule input)
+        private ReleaseDto ApplyIncludeOptRelsCheckbox(ReleaseDto input)
         {
             if (IncludeOptRelsCheckbox.Checked)
             {
@@ -401,7 +401,7 @@ namespace CKAN.GUI
             }
             else
             {
-                var newMod = CkanModule.FromJson(input.ToJson());
+                var newMod = ReleaseDto.FromJson(input.ToJson());
                 if (newMod.depends != null)
                 {
                     foreach (var rel in newMod.depends)
@@ -438,7 +438,7 @@ namespace CKAN.GUI
             new ExportOption(ExportFileType.Ckan, Properties.Resources.MainModPack, "ckan"),
         };
 
-        private CkanModule?                  module;
+        private ReleaseDto?                  module;
         private IUser?                       user;
         private TaskCompletionSource<bool>?  task;
         private readonly List<RelationshipDescriptor> ignored = new List<RelationshipDescriptor>();

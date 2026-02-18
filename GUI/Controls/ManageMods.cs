@@ -1242,7 +1242,7 @@ namespace CKAN.GUI
                                                 .Select(im => im.Module)
                                                 .ToHashSet();
                         removable.RemoveWhere(m => removable.Any(other => other.depends is List<RelationshipDescriptor> deps
-                                                                          && deps.Any(dep => dep.MatchesAny(new CkanModule[] { m },
+                                                                          && deps.Any(dep => dep.MatchesAny(new ReleaseDto[] { m },
                                                                                                             null, null))));
                         // Marking a mod as AutoInstalled can immediately queue it for removal if there is no dependent mod.
                         // Reset the state of the AutoInstalled checkbox for these by deducing it from the changeset.
@@ -1461,7 +1461,7 @@ namespace CKAN.GUI
                     modules.SelectMany(m => Enumerable.Repeat(m.Module, 1)
                                                       .Concat(Utilities.DefaultIfThrows(
                                                                   () => reg.AvailableByIdentifier(m.Identifier))
-                                                              ?? Enumerable.Empty<CkanModule>())
+                                                              ?? Enumerable.Empty<ReleaseDto>())
                                                       .Distinct())
                            .ToArray());
                 UseWaitCursor = false;
@@ -1932,7 +1932,7 @@ namespace CKAN.GUI
                 ? (definedB ? valA.CompareTo(valB) : -1)
                 : (definedB ? 1                    :  0);
 
-        public void ResetFilterAndSelectModOnList(CkanModule module)
+        public void ResetFilterAndSelectModOnList(ReleaseDto module)
         {
             EditModSearches.Clear();
             FocusMod(module.identifier, true);

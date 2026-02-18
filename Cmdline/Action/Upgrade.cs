@@ -41,7 +41,7 @@ namespace CKAN.CmdLine
 
             if (options.ckan_file != null)
             {
-                options.modules?.Add(CkanModule.FromFile(options.ckan_file).identifier);
+                options.modules?.Add(ReleaseDto.FromFile(options.ckan_file).identifier);
             }
 
             if (options.modules?.Count == 0 && !options.upgrade_all)
@@ -183,11 +183,11 @@ namespace CKAN.CmdLine
                                     IUser                      user,
                                     CKAN.GameInstance          instance,
                                     InstalledFilesDeduplicator deduper,
-                                    List<CkanModule>           modules)
+                                    List<ReleaseDto>           modules)
         {
             UpgradeModules(
                 cache, userAgent, user, instance, repoData,
-                (ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<CkanModule> autoInstalled) =>
+                (ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<ReleaseDto> autoInstalled) =>
                     installer.Upgrade(modules, downloader,
                                       ref possibleConfigOnlyDirs,
                                       regMgr, deduper, autoInstalled, true, true),
@@ -210,7 +210,7 @@ namespace CKAN.CmdLine
         {
             UpgradeModules(
                 cache, userAgent, user, instance, repoData,
-                (ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<CkanModule> autoInstalled) =>
+                (ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<ReleaseDto> autoInstalled) =>
                 {
                     var crit     = instance.VersionCriteria();
                     var registry = regMgr.registry;
@@ -220,12 +220,12 @@ namespace CKAN.CmdLine
                                              .Except(identsAndVersions.Select(arg => UpToFirst(arg, '=')))
                                              .ToHashSet();
                     // The modules we'll have after upgrading as aggressively as possible
-                    var limiters = identsAndVersions.Select(req => CkanModule.FromIDandVersion(registry, req, crit)
+                    var limiters = identsAndVersions.Select(req => ReleaseDto.FromIDandVersion(registry, req, crit)
                                                                    ?? Utilities.DefaultIfThrows(
                                                                        () => registry.LatestAvailable(req, instance.StabilityToleranceConfig, crit))
                                                                    ?? registry.GetInstalledVersion(req))
                                                     .Concat(heldIdents.Select(ident => registry.GetInstalledVersion(ident)))
-                                                    .OfType<CkanModule>()
+                                                    .OfType<ReleaseDto>()
                                                     .ToList();
                     // Modules allowed by THOSE modules' relationships
                     var upgradeable = registry
@@ -234,10 +234,10 @@ namespace CKAN.CmdLine
                                       .ToDictionary(m => m.identifier,
                                                     m => m);
                     // Substitute back in the ident=ver requested versions
-                    var to_upgrade = new List<CkanModule>();
+                    var to_upgrade = new List<ReleaseDto>();
                     foreach (var request in identsAndVersions)
                     {
-                        var module = CkanModule.FromIDandVersion(registry, request, crit)
+                        var module = ReleaseDto.FromIDandVersion(registry, request, crit)
                                      ?? (upgradeable.GetValueOrDefault(request));
                         if (module == null)
                         {
@@ -265,7 +265,7 @@ namespace CKAN.CmdLine
                                              : orig;
 
         // Action<ref T> isn't allowed
-        private delegate void AttemptUpgradeAction(ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<CkanModule> autoInstalled);
+        private delegate void AttemptUpgradeAction(ModuleInstaller installer, NetAsyncModulesDownloader downloader, RegistryManager regMgr, ref HashSet<string>? possibleConfigOnlyDirs, ISet<ReleaseDto> autoInstalled);
 
         /// <summary>
         /// The core of the module upgrading logic, with callbacks to
@@ -284,7 +284,7 @@ namespace CKAN.CmdLine
                                     CKAN.GameInstance     instance,
                                     RepositoryDataManager repoData,
                                     AttemptUpgradeAction  attemptUpgradeCallback,
-                                    Action<CkanModule>    addUserChoiceCallback)
+                                    Action<ReleaseDto>    addUserChoiceCallback)
         {
             using (TransactionScope transact = CkanTransaction.CreateTransactionScope()) {
                 var installer  = new ModuleInstaller(instance, cache,
@@ -292,7 +292,7 @@ namespace CKAN.CmdLine
                 var downloader = new NetAsyncModulesDownloader(user, cache, userAgent);
                 var regMgr     = RegistryManager.Instance(instance, repoData);
                 HashSet<string>? possibleConfigOnlyDirs = null;
-                var autoInstalled = new HashSet<CkanModule>();
+                var autoInstalled = new HashSet<ReleaseDto>();
                 bool done = false;
                 while (!done)
                 {

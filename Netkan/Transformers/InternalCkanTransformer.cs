@@ -37,7 +37,7 @@ namespace CKAN.NetKAN.Transformers
                 // Set it to a default if missing so CkanModule can initialize.
                 var moduleJson = metadata.Json();
                 moduleJson.SafeAdd("version", "1");
-                CkanModule   mod  = CkanModule.FromJson(moduleJson.ToString());
+                ReleaseDto   mod  = ReleaseDto.FromJson(moduleJson.ToString());
                 var internalJson = _moduleService.GetInternalCkan(mod, contents);
 
                 if (internalJson != null)

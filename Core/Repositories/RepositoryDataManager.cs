@@ -2,17 +2,16 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-
 using Newtonsoft.Json;
 using ChinhDo.Transactions;
 using log4net;
-
 using CKAN.IO;
 using CKAN.Extensions;
 using CKAN.Games;
 
 namespace CKAN
 {
+
     /// <summary>
     /// Retrieves data from repositories and provides access to it.
     /// Data is cached in memory and on disk to minimize reloading.
@@ -33,17 +32,22 @@ namespace CKAN
         #region Provide access to the data
 
         /// <summary>
+        /// Provides access to repository data using a certain storage method.
+        /// </summary>
+        public IRepositoryAccess Access { get; } = new InMemoryDataAccess();
+
+        /// <summary>
         /// Return the cached available modules from a given set of repositories
         /// for a given identifier
         /// </summary>
         /// <param name="repos">The repositories we want to use</param>
         /// <param name="identifier">The identifier to look up</param>
         /// <returns>Sequence of available modules, if any</returns>
-        public IEnumerable<AvailableModule> GetAvailableModules(IEnumerable<Repository>? repos,
-                                                                string                   identifier)
+        public IEnumerable<ModuleDto> GetAvailableModules(IEnumerable<RepositoryDto>? repos,
+            string identifier)
             => GetRepoDatas(repos)
                 .Select(data => data.AvailableModules?.GetValueOrDefault(identifier))
-                .OfType<AvailableModule>();
+                .OfType<ModuleDto>();
 
         /// <summary>
         /// Return the cached available module dictionaries for a given set of repositories.
@@ -52,10 +56,10 @@ namespace CKAN
         /// </summary>
         /// <param name="repos">The repositories we want to use</param>
         /// <returns>Sequence of available module dictionaries</returns>
-        public IEnumerable<Dictionary<string, AvailableModule>> GetAllAvailDicts(IEnumerable<Repository>? repos)
+        public IEnumerable<Dictionary<string, ModuleDto>> GetAllAvailDicts(IEnumerable<RepositoryDto>? repos)
             => GetRepoDatas(repos).Select(data => data.AvailableModules)
-                                  .OfType<Dictionary<string, AvailableModule>>()
-                                  .Where(availMods => availMods.Count > 0);
+                .OfType<Dictionary<string, ModuleDto>>()
+                .Where(availMods => availMods.Count > 0);
 
         /// <summary>
         /// Return the cached AvailableModule objects from the given repositories.
@@ -63,7 +67,7 @@ namespace CKAN
         /// </summary>
         /// <param name="repos">Sequence of repositories to get modules from</param>
         /// <returns>Sequence of available modules</returns>
-        public IEnumerable<AvailableModule> GetAllAvailableModules(IEnumerable<Repository>? repos)
+        public IEnumerable<ModuleDto> GetAllAvailableModules(IEnumerable<RepositoryDto>? repos)
             => GetAllAvailDicts(repos).SelectMany(d => d.Values);
 
         /// <summary>
@@ -72,12 +76,12 @@ namespace CKAN
         /// <param name="repos">The repositories from which to get download count data</param>
         /// <param name="identifier">The identifier to look up</param>
         /// <returns>Number if found, else null</returns>
-        public int? GetDownloadCount(IEnumerable<Repository>? repos, string identifier)
+        public int? GetDownloadCount(IEnumerable<RepositoryDto>? repos, string identifier)
             => GetRepoDatas(repos).Select(data => data.DownloadCounts)
-                                  .OfType<SortedDictionary<string, int>>()
-                                  .Select(counts => counts.GetValueOrDefault(identifier))
-                                  .OfType<int>()
-                                  .FirstOrDefault();
+                .OfType<SortedDictionary<string, int>>()
+                .Select(counts => counts.GetValueOrDefault(identifier))
+                .OfType<int>()
+                .FirstOrDefault();
 
         #endregion
 
@@ -88,16 +92,17 @@ namespace CKAN
         /// </summary>
         /// <param name="repos">Repositories for which to load data</param>
         /// <param name="percentProgress">Progress object for reporting percentage complete</param>
-        public void Prepopulate(IReadOnlyCollection<Repository> repos,
-                                IProgress<int>?                 percentProgress)
+        public void Prepopulate(IReadOnlyCollection<RepositoryDto> repos,
+            IProgress<int>? percentProgress)
         {
             // Look up the sizes of repos that have uncached files
-            var reposAndSizes = repos.Where(r => r.uri != null && !repositoriesData.ContainsKey(r))
-                                     .Select(r => new Tuple<Repository, string>(r, GetRepoDataPath(r)))
-                                     .Where(tuple => File.Exists(tuple.Item2))
-                                     .Select(tuple => new Tuple<Repository, long>(tuple.Item1,
-                                                                                  new FileInfo(tuple.Item2).Length))
-                                     .ToList();
+            var reposAndSizes = repos
+                .Where(r => r.uri != null && Access.GetInternalRepoData(r) == null)
+                .Select(r => new Tuple<RepositoryDto, string>(r, GetRepoDataPath(r)))
+                .Where(tuple => File.Exists(tuple.Item2))
+                .Select(tuple => new Tuple<RepositoryDto, long>(tuple.Item1,
+                    new FileInfo(tuple.Item2).Length))
+                .ToList();
             // Translate from file group offsets to percent
             var progress = new ProgressScalePercentsByFileSizes(
                 percentProgress, reposAndSizes.Select(tuple => tuple.Item2));
@@ -108,15 +113,15 @@ namespace CKAN
             }
         }
 
-        public TimeSpan LastUpdate(IEnumerable<Repository> repos)
+        public TimeSpan LastUpdate(IEnumerable<RepositoryDto> repos)
             => repos.Distinct().Where(repoDataStale)
-                               .Select(RepoUpdateTimestamp)
-                               .OfType<DateTime>()
-                               .Select(dt => DateTime.Now - dt)
-                               .DefaultIfEmpty(TimeSpan.Zero)
-                               .Min();
+                .Select(RepoUpdateTimestamp)
+                .OfType<DateTime>()
+                .Select(dt => DateTime.Now - dt)
+                .DefaultIfEmpty(TimeSpan.Zero)
+                .Min();
 
-        public static readonly TimeSpan TimeTillStale     = TimeSpan.FromDays(3);
+        public static readonly TimeSpan TimeTillStale = TimeSpan.FromDays(3);
         public static readonly TimeSpan TimeTillVeryStale = TimeSpan.FromDays(14);
 
         /// <summary>
@@ -141,12 +146,12 @@ namespace CKAN
         /// <param name="user">Object for reporting messages and progress to the UI</param>
         /// <param name="userAgent">User agent string to send with the request</param>
         /// <returns>Updated if we changed any of the available modules, NoChanges if already up to date</returns>
-        public UpdateResult Update(IReadOnlyCollection<Repository> repos,
-                                   IGame                           game,
-                                   bool                            skipETags,
-                                   NetAsyncDownloader              downloader,
-                                   IUser                           user,
-                                   string?                         userAgent = null)
+        public UpdateResult Update(IReadOnlyCollection<RepositoryDto> repos,
+            IGame game,
+            bool skipETags,
+            NetAsyncDownloader downloader,
+            IUser user,
+            string? userAgent = null)
         {
             // Get latest copy of the game versions data (remote build map)
             user.RaiseMessage(Properties.Resources.NetRepoUpdatingBuildMap);
@@ -155,11 +160,11 @@ namespace CKAN
             // Check if any ETags have changed, quit if not
             user.RaiseProgress(Properties.Resources.NetRepoCheckingForUpdates, 0);
             var toUpdate = repos.DistinctBy(r => r.uri)
-                                .Where(r => r.uri != null
-                                            && (r.uri.IsFile
-                                                || skipETags
-                                                || repoDataStale(r)))
-                                .ToArray();
+                .Where(r => r.uri != null
+                            && (r.uri.IsFile
+                                || skipETags
+                                || repoDataStale(r)))
+                .ToArray();
             if (toUpdate.Length < 1)
             {
                 // Update timestamp for already up to date repos
@@ -167,6 +172,7 @@ namespace CKAN
                 {
                     File.SetLastWriteTimeUtc(f, DateTime.UtcNow);
                 }
+
                 user.RaiseProgress(Properties.Resources.NetRepoAlreadyUpToDate, 100);
                 user.RaiseMessage(Properties.Resources.NetRepoNoChanges);
                 return UpdateResult.NoChanges;
@@ -177,10 +183,10 @@ namespace CKAN
             {
                 // Download metadata
                 var targets = toUpdate.Select(r => r.uri == null
-                                                   ? null
-                                                   : new NetAsyncDownloader.DownloadTargetStream(r.uri))
-                                      .OfType<NetAsyncDownloader.DownloadTargetStream>()
-                                      .ToArray();
+                        ? null
+                        : new NetAsyncDownloader.DownloadTargetStream(r.uri))
+                    .OfType<NetAsyncDownloader.DownloadTargetStream>()
+                    .ToArray();
                 downloader.DownloadAndWait(targets);
 
                 // If we get to this point, the downloads were successful
@@ -192,15 +198,16 @@ namespace CKAN
                 foreach ((var repo, var target) in toUpdate.Zip(targets))
                 {
                     msg = string.Format(Properties.Resources.NetRepoLoadingModulesFromRepo,
-                                        repo.name);
+                        repo.name);
                     log.InfoFormat("Loading repo stream...");
                     try
                     {
                         using (target)
                         {
                             // Load the stream, save to in memory cache
-                            var repoData = repositoriesData[repo] =
-                                RepositoryData.FromStream(target.contents, game, progress);
+                            var repoData = RepositoryData.FromStream(target.contents, game, progress);
+                            Access.CreateRepo(repo, repoData);
+                            
                             // Save parsed data to disk
                             log.DebugFormat("Saving data for {0} repo...", repo.name);
                             repoData.SaveTo(GetRepoDataPath(repo));
@@ -211,8 +218,10 @@ namespace CKAN
                         // Show parsing errors in the Downloads Failed popup
                         throw new DownloadErrorsKraken(target, kraken);
                     }
+
                     progress.NextFile();
                 }
+
                 // Commit these etags to disk
                 saveETags();
 
@@ -227,10 +236,11 @@ namespace CKAN
             catch (Exception exc)
             {
                 foreach (var e in exc.TraverseNodes(ex => ex.InnerException)
-                                     .Reverse())
+                             .Reverse())
                 {
                     log.Error("Repository update failed", e);
                 }
+
                 // Reset etags on errors
                 loadETags();
                 throw;
@@ -241,7 +251,7 @@ namespace CKAN
                 downloader.onOneCompleted -= setETag;
             }
 
-            return repositoriesData.Values.Any(repoData => repoData.UnsupportedSpec)
+            return Access.GetInternalRepoData().Any(repoData => repoData.UnsupportedSpec)
                 ? UpdateResult.OutdatedClient
                 : UpdateResult.Updated;
         }
@@ -250,7 +260,7 @@ namespace CKAN
         /// Fired when repository data changes so registries can invalidate their
         /// caches of available module data
         /// </summary>
-        public event Action<Repository[]>? Updated;
+        public event Action<RepositoryDto[]>? Updated;
 
         #region ETags
 
@@ -258,7 +268,8 @@ namespace CKAN
         {
             try
             {
-                etags = JsonConvert.DeserializeObject<Dictionary<Uri, string>>(File.ReadAllText(etagsPath, Encoding.UTF8))
+                etags = JsonConvert.DeserializeObject<Dictionary<Uri, string>>(File.ReadAllText(etagsPath,
+                            Encoding.UTF8))
                         // An empty or all-null file can deserialize as null
                         ?? new Dictionary<Uri, string>();
             }
@@ -272,14 +283,14 @@ namespace CKAN
         {
             var txFileMgr = new TxFileManager();
             txFileMgr.WriteAllText(etagsPath,
-                                   JsonConvert.SerializeObject(etags, Formatting.Indented),
-                                   Encoding.UTF8);
+                JsonConvert.SerializeObject(etags, Formatting.Indented),
+                Encoding.UTF8);
         }
 
         private void setETag(NetAsyncDownloader.DownloadTarget target,
-                             Exception?                        error,
-                             string?                           etag,
-                             string                            sha256)
+            Exception? error,
+            string? etag,
+            string sha256)
         {
             var url = target.urls.First();
             if (etag != null)
@@ -292,7 +303,7 @@ namespace CKAN
             }
         }
 
-        private bool repoDataStale(Repository r)
+        private bool repoDataStale(RepositoryDto r)
             // URL missing
             => r.uri == null
                // No ETag on file
@@ -304,12 +315,10 @@ namespace CKAN
 
         #endregion
 
-        private RepositoryData? GetRepoData(Repository repo)
-            => repositoriesData.TryGetValue(repo, out RepositoryData? data)
-                ? data
-                : LoadRepoData(repo, null);
+        private RepositoryData? GetRepoData(RepositoryDto repo) =>
+            Access.GetInternalRepoData(repo) ?? LoadRepoData(repo, null);
 
-        private RepositoryData? LoadRepoData(Repository repo, IProgress<int>? progress)
+        private RepositoryData? LoadRepoData(RepositoryDto repo, IProgress<int>? progress)
         {
             var path = GetRepoDataPath(repo);
             log.DebugFormat("Looking for data in {0}", path);
@@ -317,39 +326,38 @@ namespace CKAN
             if (data != null)
             {
                 log.Debug("Found it! Adding...");
-                repositoriesData.Add(repo, data);
+                Access.CreateRepo(repo, data);
             }
+
             return data;
         }
 
-        private IEnumerable<RepositoryData> GetRepoDatas(IEnumerable<Repository>? repos)
+        private IEnumerable<RepositoryData> GetRepoDatas(IEnumerable<RepositoryDto>? repos)
             => repos?.OrderBy(repo => repo.priority)
-                     .ThenBy(repo => repo.name)
-                     .Select(GetRepoData)
-                     .OfType<RepositoryData>()
+                   .ThenBy(repo => repo.name)
+                   .Select(GetRepoData)
+                   .OfType<RepositoryData>()
                ?? Enumerable.Empty<RepositoryData>();
 
-        private DateTime? RepoUpdateTimestamp(Repository repo)
+        private DateTime? RepoUpdateTimestamp(RepositoryDto repo)
             => FileTimestamp(GetRepoDataPath(repo));
 
         private static DateTime? FileTimestamp(string path)
-            => File.Exists(path) ? File.GetLastWriteTime(path)
-                                 : null;
+            => File.Exists(path)
+                ? File.GetLastWriteTime(path)
+                : null;
 
         private string etagsPath => Path.Combine(reposDir, "etags.json");
         private Dictionary<Uri, string> etags = new Dictionary<Uri, string>();
 
-        private readonly Dictionary<Repository, RepositoryData> repositoriesData =
-            new Dictionary<Repository, RepositoryData>();
-
-        private string GetRepoDataPath(Repository repo)
+        private string GetRepoDataPath(RepositoryDto repo)
             => GetRepoDataPath(repo, NetFileCache.CreateURLHash(repo?.uri));
 
-        private string GetRepoDataPath(Repository repo, string hash)
+        private string GetRepoDataPath(RepositoryDto repo, string hash)
             => Directory.EnumerateFiles(reposDir)
-                        .Where(path => Path.GetFileName(path).StartsWith(hash))
-                        .DefaultIfEmpty(Path.Combine(reposDir, $"{hash}-{repo.name}.json"))
-                        .First();
+                .Where(path => Path.GetFileName(path).StartsWith(hash))
+                .DefaultIfEmpty(Path.Combine(reposDir, $"{hash}-{repo.name}.json"))
+                .First();
 
         private readonly string reposDir;
         private static readonly string defaultReposDir = Path.Combine(CKANPathUtils.AppDataPath, "repos");

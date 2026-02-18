@@ -22,7 +22,7 @@ namespace CKAN.NetKAN.Validators
             Log.Debug("Validating that metadata is appropriate for DLLs");
 
             var json = metadata.AllJson;
-            var mod  = CkanModule.FromJson(json.ToString());
+            var mod  = ReleaseDto.FromJson(json.ToString());
             if (!mod.IsDLC)
             {
                 var package = _http.DownloadModule(metadata);

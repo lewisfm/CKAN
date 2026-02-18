@@ -49,7 +49,7 @@ namespace CKAN.GUI
     #endif
     public class ModChange
     {
-        public CkanModule        Mod        { get; private set; }
+        public ReleaseDto        Mod        { get; private set; }
         public GUIModChangeType  ChangeType { get; private set; }
         public SelectionReason[] Reasons    { get; private set; }
 
@@ -70,14 +70,14 @@ namespace CKAN.GUI
         public bool IsRemovable => IsAutoRemoval || IsUserRequested;
 
         // If we don't have a Reason, the user probably wanted to install it
-        public ModChange(CkanModule       mod,
+        public ModChange(ReleaseDto       mod,
                          GUIModChangeType changeType,
                          IConfiguration   config)
             : this(mod, changeType, new SelectionReason.UserRequested(), config)
         {
         }
 
-        public ModChange(CkanModule       mod,
+        public ModChange(ReleaseDto       mod,
                          GUIModChangeType changeType,
                          SelectionReason  reason,
                          IConfiguration   config)
@@ -85,7 +85,7 @@ namespace CKAN.GUI
         {
         }
 
-        public ModChange(CkanModule                   mod,
+        public ModChange(ReleaseDto                   mod,
                          GUIModChangeType             changeType,
                          IEnumerable<SelectionReason> reasons,
                          IConfiguration               config)
@@ -139,8 +139,8 @@ namespace CKAN.GUI
     #endif
     public class ModUpgrade : ModChange
     {
-        public ModUpgrade(CkanModule       mod,
-                          CkanModule       targetMod,
+        public ModUpgrade(ReleaseDto       mod,
+                          ReleaseDto       targetMod,
                           bool             userReinstall,
                           bool             metadataChanged,
                           IConfiguration   config)
@@ -165,7 +165,7 @@ namespace CKAN.GUI
         /// <summary>
         /// The target version for upgrading
         /// </summary>
-        public CkanModule targetMod;
+        public ReleaseDto targetMod;
 
         private bool IsReinstall
             => targetMod.identifier == Mod.identifier

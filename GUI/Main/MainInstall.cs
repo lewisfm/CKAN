@@ -44,7 +44,7 @@ namespace CKAN.GUI
         /// </summary>
         /// <param name="registry">Reference to the registry</param>
         /// <param name="modules">Modules to install</param>
-        public void InstallModuleDriver(IRegistryQuerier registry, IEnumerable<CkanModule> modules)
+        public void InstallModuleDriver(IRegistryQuerier registry, IEnumerable<ReleaseDto> modules)
         {
             if (CurrentInstance != null)
             {
@@ -112,10 +112,10 @@ namespace CKAN.GUI
                 installer.RemoveProgress  += OnModRemoving;
 
                 // this will be the final list of mods we want to install
-                var toInstall   = new List<CkanModule>();
-                var autoInstalled = new HashSet<CkanModule>();
-                var toUninstall = new HashSet<CkanModule>();
-                var toUpgrade   = new HashSet<CkanModule>();
+                var toInstall   = new List<ReleaseDto>();
+                var autoInstalled = new HashSet<ReleaseDto>();
+                var toUninstall = new HashSet<ReleaseDto>();
+                var toUpgrade   = new HashSet<ReleaseDto>();
 
                 // Check whether we need an explicit Remove call for auto-removals.
                 // If there's an Upgrade or a user-initiated Remove, they'll take care of it.
@@ -164,7 +164,7 @@ namespace CKAN.GUI
                                                                           or GUIModChangeType.Update)
                                                .Select(ch => ch.Mod)
                                                .ToHashSet();
-                    var shown = new HashSet<CkanModule>();
+                    var shown = new HashSet<ReleaseDto>();
                     // Prompt for recommendations and suggestions, if any
                     var labels = ModuleLabelList.ModuleLabels
                                                 .LabelsFor(CurrentInstance.Name)
@@ -172,9 +172,9 @@ namespace CKAN.GUI
                     var coreConfig = ServiceLocator.Container.Resolve<IConfiguration>();
                     while (ModuleInstaller.FindRecommendations(
                         CurrentInstance, sourceModules, toInstall, toUninstall, shown, registry,
-                        out Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-                        out Dictionary<CkanModule, List<string>> suggestions,
-                        out Dictionary<CkanModule, HashSet<string>> supporters)
+                        out Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+                        out Dictionary<ReleaseDto, List<string>> suggestions,
+                        out Dictionary<ReleaseDto, HashSet<string>> supporters)
                         && configuration != null)
                     {
                         tabController.ShowTab(ChooseRecommendedModsTabPage.Name, 3);
@@ -291,10 +291,10 @@ namespace CKAN.GUI
                                                                      .IntersectsWith(kvp.Key.download ?? Enumerable.Empty<Uri>()))
                                                      .ToArray(),
                                         kvp.Value)),
-                                    (m1, m2) => (m1 as CkanModule)?.download == (m2 as CkanModule)?.download);
+                                    (m1, m2) => (m1 as ReleaseDto)?.download == (m2 as ReleaseDto)?.download);
                                  dfd.ShowDialog(this);
                             });
-                            var skip  = (dfd?.Wait()?.OfType<CkanModule>() ?? Enumerable.Empty<CkanModule>())
+                            var skip  = (dfd?.Wait()?.OfType<ReleaseDto>() ?? Enumerable.Empty<ReleaseDto>())
                                                      .ToArray();
                             var abort = dfd?.Abort ?? false;
                             dfd?.Dispose();
@@ -311,7 +311,7 @@ namespace CKAN.GUI
                                 // and any mods depending on them
                                 var dependers = Registry.FindReverseDependencies(
                                         skip.Select(s => s.identifier).ToList(),
-                                        Array.Empty<CkanModule>(),
+                                        Array.Empty<ReleaseDto>(),
                                         registry.InstalledModules.Select(im => im.Module)
                                                                  .Concat(fullChangeset)
                                                                  .ToArray(),
@@ -416,7 +416,7 @@ namespace CKAN.GUI
         /// <param name="mod">The module that is being downloaded</param>
         /// <param name="remaining">Number of bytes left to download</param>
         /// <param name="total">Number of bytes in complete download</param>
-        public void OnModDownloading(CkanModule mod, long remaining, long total)
+        public void OnModDownloading(ReleaseDto mod, long remaining, long total)
         {
             if (total > 0)
             {
@@ -426,7 +426,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void OnModValidating(CkanModule mod, long remaining, long total)
+        private void OnModValidating(ReleaseDto mod, long remaining, long total)
         {
             if (total > 0)
             {
@@ -436,7 +436,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void OnModInstalling(CkanModule mod, long remaining, long total)
+        private void OnModInstalling(ReleaseDto mod, long remaining, long total)
         {
             if (total > 0)
             {
@@ -456,7 +456,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void OnModInstalled(CkanModule mod)
+        private void OnModInstalled(ReleaseDto mod)
         {
             LabelsAfterInstall(mod);
         }

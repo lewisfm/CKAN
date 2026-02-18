@@ -27,7 +27,7 @@ namespace Tests.NetKAN.Validators
                 .Returns(TestData.DogeCoinFlagZip());
             var github = new Mock<IGithubApi>();
             var modSvc = new Mock<IModuleService>();
-            modSvc.Setup(ms => ms.GetInternalSpaceWarpInfos(It.IsAny<CkanModule>(),
+            modSvc.Setup(ms => ms.GetInternalSpaceWarpInfos(It.IsAny<ReleaseDto>(),
                                                             It.IsAny<ZipFile>(),
                                                             It.IsAny<string?>()))
                   .Returns(Enumerable.Repeat(

@@ -24,7 +24,7 @@ namespace CKAN.GUI
 
         public void UpdateModInfo(GUIMod gui_module)
         {
-            CkanModule module = gui_module.Module;
+            ReleaseDto module = gui_module.Module;
 
             Util.Invoke(this, () =>
             {

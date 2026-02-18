@@ -32,10 +32,10 @@ namespace Tests.Core.Relationships
         {
             ksp = new DisposableKSP();
 
-            var repos = new SortedDictionary<string, Repository>()
+            var repos = new SortedDictionary<string, RepositoryDto>()
             {
                 {
-                    "testRepo", new Repository("testRepo", TestData.TestKANZip())
+                    "testRepo", new RepositoryDto("testRepo", TestData.TestKANZip())
                 }
             };
             var user = new NullUser();
@@ -58,14 +58,14 @@ namespace Tests.Core.Relationships
         [Test]
         public void Empty()
         {
-            Assert.IsTrue(CKAN.SanityChecker.IsConsistent(new List<CkanModule>(), dlls, dlc));
+            Assert.IsTrue(CKAN.SanityChecker.IsConsistent(new List<ReleaseDto>(), dlls, dlc));
         }
 
         [Test]
         public void DogeCoin()
         {
             // Test with a module that depends and conflicts with nothing.
-            var mods = new List<CkanModule?> { registry?.LatestAvailable("DogeCoinFlag", stabilityTolerance, null) }.OfType<CkanModule>();
+            var mods = new List<ReleaseDto?> { registry?.LatestAvailable("DogeCoinFlag", stabilityTolerance, null) }.OfType<ReleaseDto>();
 
             Assert.IsTrue(CKAN.SanityChecker.IsConsistent(mods, dlls, dlc), "DogeCoinFlag");
         }
@@ -73,7 +73,7 @@ namespace Tests.Core.Relationships
         [Test]
         public void CustomBiomes()
         {
-            var mods = Enumerable.Repeat(registry?.LatestAvailable("CustomBiomes", stabilityTolerance, null), 1).OfType<CkanModule>().ToList();
+            var mods = Enumerable.Repeat(registry?.LatestAvailable("CustomBiomes", stabilityTolerance, null), 1).OfType<ReleaseDto>().ToList();
 
             Assert.IsFalse(CKAN.SanityChecker.IsConsistent(mods, dlls, dlc), "CustomBiomes without data");
 
@@ -87,7 +87,7 @@ namespace Tests.Core.Relationships
         [Test]
         public void CustomBiomesWithDlls()
         {
-            var mods = new List<CkanModule>();
+            var mods = new List<ReleaseDto>();
             var dlls = new Dictionary<string, string> { { "CustomBiomes", "" } }.Keys;
 
             Assert.IsTrue(CKAN.SanityChecker.IsConsistent(mods, dlls, dlc), "CustomBiomes dll by itself");
@@ -104,7 +104,7 @@ namespace Tests.Core.Relationships
         [Test]
         public void ConflictWithDll()
         {
-            var mods = new List<CkanModule> { registry?.LatestAvailable("SRL", stabilityTolerance, null)! };
+            var mods = new List<ReleaseDto> { registry?.LatestAvailable("SRL", stabilityTolerance, null)! };
             var dlls = new Dictionary<string, string> { { "QuickRevert", "" } }.Keys;
 
             Assert.IsTrue(CKAN.SanityChecker.IsConsistent(mods, this.dlls, dlc), "SRL can be installed by itself");
@@ -114,7 +114,7 @@ namespace Tests.Core.Relationships
         [Test]
         public void FindUnsatisfiedDepends()
         {
-            var mods = new List<CkanModule>();
+            var mods = new List<ReleaseDto>();
             var dlls = new Dictionary<string, string>().Keys;
             var dlc = new Dictionary<string, UnmanagedModuleVersion>();
 
@@ -146,12 +146,12 @@ namespace Tests.Core.Relationships
         [Test]
         public void ReverseDepends()
         {
-            var mods = new CkanModule?[]
+            var mods = new ReleaseDto?[]
             {
                 registry?.LatestAvailable("CustomBiomes",       stabilityTolerance, null),
                 registry?.LatestAvailable("CustomBiomesKerbal", stabilityTolerance, null),
                 registry?.LatestAvailable("DogeCoinFlag",       stabilityTolerance, null)
-            }.OfType<CkanModule>().ToHashSet();
+            }.OfType<ReleaseDto>().ToHashSet();
 
             // Make sure some of our expectations regarding dependencies are correct.
             Assert.Contains("CustomBiomes", registry?.LatestAvailable("CustomBiomesKerbal", stabilityTolerance, null)?.depends?.Select(x => x.ToString()).ToList());
@@ -186,9 +186,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MismatchedDependencyVersion_Inconsistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""depender"",
                     ""author"":     ""modder"",
@@ -199,7 +199,7 @@ namespace Tests.Core.Relationships
                         ""version"": ""1.2.3""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""dependency"",
                     ""author"":     ""modder"",
@@ -216,9 +216,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MatchedDependencyVersion_Consistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""depender"",
                     ""author"":     ""modder"",
@@ -229,7 +229,7 @@ namespace Tests.Core.Relationships
                         ""version"": ""1.2.3""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""dependency"",
                     ""author"":     ""modder"",
@@ -246,9 +246,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MismatchedConflictVersion_Consistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""depender"",
                     ""author"":     ""modder"",
@@ -259,7 +259,7 @@ namespace Tests.Core.Relationships
                         ""version"": ""1.2.3""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""dependency"",
                     ""author"":     ""modder"",
@@ -276,9 +276,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MatchedConflictVersion_Inconsistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""depender"",
                     ""author"":     ""modder"",
@@ -289,7 +289,7 @@ namespace Tests.Core.Relationships
                         ""version"": ""1.2.3""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""dependency"",
                     ""author"":     ""modder"",
@@ -306,9 +306,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MultipleVersionsOfSelfConflictingModule_Consistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""self-conflictor"",
                     ""author"":     ""modder"",
@@ -318,7 +318,7 @@ namespace Tests.Core.Relationships
                         ""name"":    ""self-conflictor""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""self-conflictor"",
                     ""author"":     ""modder"",
@@ -338,9 +338,9 @@ namespace Tests.Core.Relationships
         public void IsConsistent_MultipleVersionsOfSelfProvidesConflictingModule_Consistent()
         {
             // Arrange
-            List<CkanModule> modules = new List<CkanModule>()
+            List<ReleaseDto> modules = new List<ReleaseDto>()
             {
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""provides-conflictor"",
                     ""author"":     ""modder"",
@@ -351,7 +351,7 @@ namespace Tests.Core.Relationships
                         ""name"":    ""providee""
                     } ]
                 }"),
-                CkanModule.FromJson(@"{
+                ReleaseDto.FromJson(@"{
                     ""spec_version"": 1,
                     ""identifier"": ""provides-conflictor"",
                     ""author"":     ""modder"",
@@ -369,7 +369,7 @@ namespace Tests.Core.Relationships
         }
 
         private static void TestDepends(List<string>                                to_remove,
-                                        HashSet<CkanModule>                         mods,
+                                        HashSet<ReleaseDto>                         mods,
                                         IReadOnlyCollection<string>                 dlls,
                                         IDictionary<string, UnmanagedModuleVersion> dlc,
                                         List<string>                                expected,
@@ -381,7 +381,7 @@ namespace Tests.Core.Relationships
             var dll_count = dlls.Count;
             var mods_count = mods.Count;
 
-            var results = CKAN.Registry.FindReverseDependencies(to_remove, Array.Empty<CkanModule>(), mods, dlls, dlc);
+            var results = CKAN.Registry.FindReverseDependencies(to_remove, Array.Empty<ReleaseDto>(), mods, dlls, dlc);
 
             // Make sure nothing changed.
             Assert.AreEqual(remove_count, to_remove.Count, message + " remove count");

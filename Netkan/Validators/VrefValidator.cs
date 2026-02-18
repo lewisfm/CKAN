@@ -27,7 +27,7 @@ namespace CKAN.NetKAN.Validators
             {
                 json["version"] = "0";
             }
-            var mod = CkanModule.FromJson(json.ToString());
+            var mod = ReleaseDto.FromJson(json.ToString());
             if (noVersion)
             {
                 json.Remove("version");

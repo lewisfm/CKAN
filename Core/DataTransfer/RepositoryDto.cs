@@ -7,7 +7,10 @@ using CKAN.Games;
 
 namespace CKAN
 {
-    public class Repository : IEquatable<Repository>
+    /// <summary>
+    /// Data transfer object of repository metadata for serializing and deserializing purposes.
+    /// </summary>
+    public class RepositoryDto : IEquatable<RepositoryDto>
     {
         [JsonIgnore]
         public static string default_ckan_repo_name => Properties.Resources.RepositoryDefaultName;
@@ -26,26 +29,26 @@ namespace CKAN
         public string? x_comment;
 
         [JsonConstructor]
-        public Repository(string name, Uri uri)
+        public RepositoryDto(string name, Uri uri)
         {
             this.name = name;
             this.uri  = uri;
         }
 
-        public Repository(string name, string uri)
+        public RepositoryDto(string name, string uri)
             : this(name, new Uri(uri))
         { }
 
-        public Repository(string name, string uri, int priority)
+        public RepositoryDto(string name, string uri, int priority)
             : this(name, uri)
         {
             this.priority = priority;
         }
 
         public override bool Equals(object? other)
-            => Equals(other as Repository);
+            => Equals(other as RepositoryDto);
 
-        public bool Equals(Repository? other)
+        public bool Equals(RepositoryDto? other)
             => other != null && uri == other.uri;
 
         public override int GetHashCode()
@@ -54,8 +57,8 @@ namespace CKAN
         public override string ToString()
             => string.Format("{0} ({1}, {2})", name, priority, uri);
 
-        public static Repository DefaultGameRepo(IGame game)
-            => new Repository($"{game.ShortName}-{default_ckan_repo_name}",
+        public static RepositoryDto DefaultGameRepo(IGame game)
+            => new RepositoryDto($"{game.ShortName}-{default_ckan_repo_name}",
                               game.DefaultRepositoryURL);
     }
 }

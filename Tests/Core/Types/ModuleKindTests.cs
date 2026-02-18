@@ -16,7 +16,7 @@ namespace Tests.Core.Types
         public void Serialize_NotNull_SavesName()
         {
             // Arrange
-            var module = new CkanModule(new ModuleVersion("1"),
+            var module = new ReleaseDto(new ModuleVersion("1"),
                                         "Amod",
                                         "A mod",
                                         "Abstract of the mod",

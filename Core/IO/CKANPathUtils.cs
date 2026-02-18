@@ -101,9 +101,9 @@ namespace CKAN.IO
                                                    bytesFree, bytesToStore);
                 }
                 log.DebugFormat("Storing {0} to {1} ({2} free)...",
-                                CkanModule.FmtSize(bytesToStore),
+                                ReleaseDto.FmtSize(bytesToStore),
                                 where.FullName,
-                                CkanModule.FmtSize(bytesFree));
+                                ReleaseDto.FmtSize(bytesFree));
             }
         }
 

@@ -12,7 +12,7 @@ namespace Tests.Core.Types
     public class GameComparator
     {
         private static readonly GameVersion gameVersion = GameVersion.Parse("1.0.4");
-        private CkanModule? gameMod;
+        private ReleaseDto? gameMod;
 
         [SetUp]
         public void Setup()

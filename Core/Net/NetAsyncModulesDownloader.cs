@@ -20,10 +20,10 @@ namespace CKAN
     /// </summary>
     public class NetAsyncModulesDownloader : IDownloader
     {
-        public event Action<CkanModule, long, long>? DownloadProgress;
+        public event Action<ReleaseDto, long, long>? DownloadProgress;
         public event Action<ByteRateCounter>?        OverallDownloadProgress;
-        public event Action<CkanModule, long, long>? StoreProgress;
-        public event Action<CkanModule>?             OneComplete;
+        public event Action<ReleaseDto, long, long>? StoreProgress;
+        public event Action<ReleaseDto>?             OneComplete;
         public event Action?                         AllComplete;
 
         /// <summary>
@@ -34,13 +34,13 @@ namespace CKAN
                                          string?           userAgent   = null,
                                          CancellationToken cancelToken = default)
         {
-            modules    = new List<CkanModule>();
+            modules    = new List<ReleaseDto>();
             downloader = new NetAsyncDownloader(user, SHA256.Create, userAgent, cancelToken);
             // Schedule us to process each module on completion.
             downloader.onOneCompleted += ModuleDownloadComplete;
             downloader.TargetProgress += (target, remaining, total) =>
             {
-                if (targetModules?[target].First() is CkanModule mod)
+                if (targetModules?[target].First() is ReleaseDto mod)
                 {
                     DownloadProgress?.Invoke(mod, remaining, total);
                 }
@@ -51,13 +51,13 @@ namespace CKAN
         }
 
         internal NetAsyncDownloader.DownloadTarget TargetFromModuleGroup(
-                HashSet<CkanModule> group,
+                HashSet<ReleaseDto> group,
                 string?[]           preferredHosts)
             => TargetFromModuleGroup(group, group.OrderBy(m => m.identifier).First(), preferredHosts);
 
         private NetAsyncDownloader.DownloadTargetFile TargetFromModuleGroup(
-                HashSet<CkanModule> group,
-                CkanModule          first,
+                HashSet<ReleaseDto> group,
+                ReleaseDto          first,
                 string?[]           preferredHosts)
             => new NetAsyncDownloader.DownloadTargetFile(
                 group.SelectMany(mod => mod.download ?? Enumerable.Empty<Uri>())
@@ -77,12 +77,12 @@ namespace CKAN
         /// <summary>
         /// <see cref="IDownloader.DownloadModules"/>
         /// </summary>
-        public void DownloadModules(IEnumerable<CkanModule> modules)
+        public void DownloadModules(IEnumerable<ReleaseDto> modules)
         {
             var activeURLs = this.modules.SelectMany(m => m.download ?? Enumerable.Empty<Uri>())
                                          .OfType<Uri>()
                                          .ToHashSet();
-            var moduleGroups = CkanModule.GroupByDownloads(modules);
+            var moduleGroups = ReleaseDto.GroupByDownloads(modules);
             // Make sure we have enough space to download and cache
             cache.CheckFreeSpace(moduleGroups.Sum(grp => grp.First().download_size));
             // Add all the requested modules
@@ -109,7 +109,7 @@ namespace CKAN
                 var exc = new ModuleDownloadErrorsKraken(
                     kraken.Exceptions
                           .SelectMany(kvp => targetModules[kvp.Key]
-                                             .Select(m => new KeyValuePair<CkanModule, Exception>(
+                                             .Select(m => new KeyValuePair<ReleaseDto, Exception>(
                                                               m, kvp.Value.GetBaseException())))
                           .ToList());
                 // Clear this.modules because we're done with these
@@ -119,16 +119,16 @@ namespace CKAN
             }
         }
 
-        public IEnumerable<CkanModule> ModulesAsTheyFinish(IReadOnlyCollection<CkanModule> cached,
-                                                           IReadOnlyCollection<CkanModule> toDownload)
+        public IEnumerable<ReleaseDto> ModulesAsTheyFinish(IReadOnlyCollection<ReleaseDto> cached,
+                                                           IReadOnlyCollection<ReleaseDto> toDownload)
         {
             var (dlTask, blockingQueue) = DownloadsCollection(toDownload);
             return ModulesAsTheyFinish(cached, dlTask, blockingQueue);
         }
 
-        private static IEnumerable<CkanModule> ModulesAsTheyFinish(IReadOnlyCollection<CkanModule> cached,
+        private static IEnumerable<ReleaseDto> ModulesAsTheyFinish(IReadOnlyCollection<ReleaseDto> cached,
                                                                    Task                            dlTask,
-                                                                   BlockingCollection<CkanModule>  blockingQueue)
+                                                                   BlockingCollection<ReleaseDto>  blockingQueue)
         {
             foreach (var m in cached)
             {
@@ -153,10 +153,10 @@ namespace CKAN
             }
         }
 
-        private (Task dlTask, BlockingCollection<CkanModule> blockingQueue) DownloadsCollection(IReadOnlyCollection<CkanModule> toDownload)
+        private (Task dlTask, BlockingCollection<ReleaseDto> blockingQueue) DownloadsCollection(IReadOnlyCollection<ReleaseDto> toDownload)
         {
-            var blockingQueue = new BlockingCollection<CkanModule>(new ConcurrentQueue<CkanModule>());
-            Action<CkanModule> oneComplete = m => blockingQueue.Add(m);
+            var blockingQueue = new BlockingCollection<ReleaseDto>(new ConcurrentQueue<ReleaseDto>());
+            Action<ReleaseDto> oneComplete = m => blockingQueue.Add(m);
             OneComplete += oneComplete;
             return (Task.Run(() => DownloadModules(toDownload))
                         .ContinueWith(t =>
@@ -191,7 +191,7 @@ namespace CKAN
                 else
                 {
                     // Cache if this download succeeded
-                    CkanModule? module = null;
+                    ReleaseDto? module = null;
                     try
                     {
                         var completedMods = targetModules[fileTarget];
@@ -264,8 +264,8 @@ namespace CKAN
 
         private const    string                  defaultMimeType = "application/octet-stream";
 
-        private readonly List<CkanModule>         modules;
-        private          Dictionary<NetAsyncDownloader.DownloadTarget, CkanModule[]>? targetModules;
+        private readonly List<ReleaseDto>         modules;
+        private          Dictionary<NetAsyncDownloader.DownloadTarget, ReleaseDto[]>? targetModules;
         private readonly NetAsyncDownloader       downloader;
         private          IUser                    User => downloader.User;
         private readonly NetModuleCache           cache;

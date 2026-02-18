@@ -13,15 +13,15 @@ namespace CKAN.GUI
     #endif
     public partial class NewRepoDialog : Form
     {
-        public NewRepoDialog(Repository[] repos)
+        public NewRepoDialog(RepositoryDto[] repos)
         {
             this.repos = repos;
             InitializeComponent();
             StartPosition = FormStartPosition.CenterScreen;
         }
 
-        public Repository Selection
-            => new Repository(RepoNameTextBox.Text, RepoUrlTextBox.Text);
+        public RepositoryDto Selection
+            => new RepositoryDto(RepoNameTextBox.Text, RepoUrlTextBox.Text);
 
         private void NewRepoDialog_Load(object? sender, EventArgs? e)
         {
@@ -39,7 +39,7 @@ namespace CKAN.GUI
         {
             if (//ReposListBox.SelectedItems is [{Tag: Repository r}, ..]
                 ReposListBox.SelectedItems.Count > 0
-                && ReposListBox.SelectedItems[0] is {Tag: Repository r})
+                && ReposListBox.SelectedItems[0] is {Tag: RepositoryDto r})
             {
                 RepoNameTextBox.Text = r.name;
                 RepoUrlTextBox.Text = r.uri.ToString();
@@ -63,6 +63,6 @@ namespace CKAN.GUI
                 && RepoUrlTextBox.Text.Length > 0;
         }
 
-        private readonly Repository[] repos;
+        private readonly RepositoryDto[] repos;
     }
 }

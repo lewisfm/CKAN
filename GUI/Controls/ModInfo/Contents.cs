@@ -43,7 +43,7 @@ namespace CKAN.GUI
                     if (selectedModule != null)
                     {
                         ContentsDownloadButton.Text = string.Format(Properties.Resources.ModInfoDownload,
-                                                                    CkanModule.FmtSize(selectedModule.Module.download_size));
+                                                                    ReleaseDto.FmtSize(selectedModule.Module.download_size));
                         selectedModule.PropertyChanged += SelectedMod_PropertyChanged;
                     }
                     Util.Invoke(ContentsPreviewTree,
@@ -72,7 +72,7 @@ namespace CKAN.GUI
 
         private GUIMod?          selectedModule;
         private InstalledModule? currentModContentsInstalledModule;
-        private CkanModule?      currentModContentsModule;
+        private ReleaseDto?      currentModContentsModule;
         private bool             cancelExpandCollapse;
 
         private void ContentsPreviewTree_NodeMouseDoubleClick(object? sender, TreeNodeMouseClickEventArgs? e)
@@ -153,7 +153,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void _UpdateModContentsTree(InstalledModule? instMod, CkanModule? module,
+        private void _UpdateModContentsTree(InstalledModule? instMod, ReleaseDto? module,
                                             bool force = false)
         {
             if (module == null)

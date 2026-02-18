@@ -53,7 +53,7 @@ namespace CKAN
         private RegistryManager(string                          path,
                                 GameInstance                    inst,
                                 RepositoryDataManager           repoData,
-                                IReadOnlyCollection<Repository> initialRepositories)
+                                IReadOnlyCollection<RepositoryDto> initialRepositories)
         {
             gameInstance = inst;
 
@@ -263,14 +263,14 @@ namespace CKAN
         /// </summary>
         public static RegistryManager Instance(GameInstance                     inst,
                                                RepositoryDataManager            repoData,
-                                               IReadOnlyCollection<Repository>? repositories = null)
+                                               IReadOnlyCollection<RepositoryDto>? repositories = null)
         {
             string directory = inst.CkanDir;
             if (!registryCache.ContainsKey(directory))
             {
                 log.DebugFormat("Preparing to load registry at {0}", directory);
                 registryCache[directory] = new RegistryManager(directory, inst, repoData,
-                                                               repositories ?? Array.Empty<Repository>());
+                                                               repositories ?? Array.Empty<RepositoryDto>());
             }
 
             return registryCache[directory];
@@ -299,7 +299,7 @@ namespace CKAN
 
         [MemberNotNull(nameof(registry))]
         private void Load(RepositoryDataManager           repoData,
-                          IReadOnlyCollection<Repository> repositories)
+                          IReadOnlyCollection<RepositoryDto> repositories)
         {
             try
             {
@@ -349,7 +349,7 @@ namespace CKAN
 
         [MemberNotNull(nameof(registry))]
         private void Create(RepositoryDataManager   repoData,
-                            IEnumerable<Repository> repositories)
+                            IEnumerable<RepositoryDto> repositories)
         {
             log.InfoFormat("Creating new CKAN registry at {0}", path);
             registry = new Registry(repoData, repositories);
@@ -362,8 +362,8 @@ namespace CKAN
             if (registry.Repositories.Count == 0)
             {
                 log.InfoFormat("Fabricating repository: {0}", gameInstance.Game.DefaultRepositoryURL);
-                var repo = Repository.DefaultGameRepo(gameInstance.Game);
-                registry.RepositoriesSet(new SortedDictionary<string, Repository>
+                var repo = RepositoryDto.DefaultGameRepo(gameInstance.Game);
+                registry.RepositoriesSet(new SortedDictionary<string, RepositoryDto>
                 {
                     { repo.name, repo }
                 });
@@ -465,13 +465,13 @@ namespace CKAN
         /// <returns>
         /// The CkanModule object
         /// </returns>
-        public CkanModule GenerateModpack(bool recommends = false, bool with_versions = true)
+        public ReleaseDto GenerateModpack(bool recommends = false, bool with_versions = true)
         {
             string gameInstanceName = gameInstance.Name;
             string name      = string.Format(Properties.Resources.ModpackName, gameInstanceName);
             var    crit      = gameInstance.VersionCriteria();
             var    minAndMax = crit.MinAndMax;
-            var module = new CkanModule(
+            var module = new ReleaseDto(
                 new ModuleVersion("v1.6"),
                 Identifier.Sanitize(name),
                 name,
@@ -485,7 +485,7 @@ namespace CKAN
             {
                 ksp_version_min       = minAndMax.Lower.AsInclusiveLower().WithoutBuild,
                 ksp_version_max       = minAndMax.Upper.AsInclusiveUpper().WithoutBuild,
-                download_content_type = typeof(CkanModule).GetTypeInfo()
+                download_content_type = typeof(ReleaseDto).GetTypeInfo()
                                             ?.GetDeclaredField("download_content_type")
                                             ?.GetCustomAttribute<DefaultValueAttribute>()
                                             ?.Value?.ToString(),
@@ -503,7 +503,7 @@ namespace CKAN
                                                     registry, gameInstance.Game, gameInstance.VersionCriteria());
             var rels = resolver.ModList()
                                .Intersect(mods)
-                               .Select(with_versions ? (Func<CkanModule, RelationshipDescriptor>)
+                               .Select(with_versions ? (Func<ReleaseDto, RelationshipDescriptor>)
                                                        RelationshipWithVersion
                                                      : RelationshipWithoutVersion)
                                .ToList();
@@ -535,14 +535,14 @@ namespace CKAN
             }
         }
 
-        private RelationshipDescriptor RelationshipWithVersion(CkanModule mod)
+        private RelationshipDescriptor RelationshipWithVersion(ReleaseDto mod)
             => new ModuleRelationshipDescriptor()
             {
                 name    = mod.identifier,
                 version = mod.version,
             };
 
-        private RelationshipDescriptor RelationshipWithoutVersion(CkanModule mod)
+        private RelationshipDescriptor RelationshipWithoutVersion(ReleaseDto mod)
             => new ModuleRelationshipDescriptor()
             {
                 name = mod.identifier,

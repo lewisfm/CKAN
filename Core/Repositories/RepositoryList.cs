@@ -6,7 +6,7 @@ namespace CKAN
 {
     public struct RepositoryList
     {
-        public Repository[] repositories;
+        public RepositoryDto[] repositories;
 
         public static RepositoryList? DefaultRepositories(IGame game, string? userAgent)
         {

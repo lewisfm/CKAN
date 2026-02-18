@@ -22,19 +22,19 @@ namespace CKAN
     /// <remarks>
     /// Json must not contain AvailableModules which are empty
     /// </remarks>
-    public class AvailableModule
+    public class ModuleDto : IEquatable<ModuleDto>
     {
         [JsonIgnore]
-        private string identifier;
+        public string identifier { get; private set; }
 
         /// <param name="identifier">The module to keep track of</param>
         [JsonConstructor]
-        private AvailableModule(string identifier)
+        private ModuleDto(string identifier)
         {
             this.identifier = identifier;
         }
 
-        public AvailableModule(string identifier, IEnumerable<CkanModule> modules)
+        public ModuleDto(string identifier, IEnumerable<ReleaseDto> modules)
             : this(identifier)
         {
             foreach (var module in modules)
@@ -56,17 +56,17 @@ namespace CKAN
         /// </summary>
         /// <param name="availMods">Sequence of mods to be contained, expected to be IGrouping&lt;&gt;, so it should support O(1) Count(), even though IEnumerable&lt;&gt; in general does not</param>
         /// <returns></returns>
-        public static AvailableModule Merge(IEnumerable<AvailableModule> availMods)
+        public static ModuleDto Merge(IEnumerable<ModuleDto> availMods)
             => availMods.Count() == 1 ? availMods.First()
-                                      : new AvailableModule(availMods.First().identifier,
+                                      : new ModuleDto(availMods.First().identifier,
                                                             availMods.Reverse().SelectMany(am => am.AllAvailable()));
 
         // The map of versions -> modules, that's what we're about!
         // First element is the oldest version, last is the newest.
         [JsonProperty]
-        [JsonConverter(typeof(JsonLeakySortedDictionaryConverter<ModuleVersion, CkanModule>))]
-        internal SortedDictionary<ModuleVersion, CkanModule> module_version =
-            new SortedDictionary<ModuleVersion, CkanModule>();
+        [JsonConverter(typeof(JsonLeakySortedDictionaryConverter<ModuleVersion, ReleaseDto>))]
+        internal SortedDictionary<ModuleVersion, ReleaseDto> module_version =
+            new SortedDictionary<ModuleVersion, ReleaseDto>();
 
         [OnError]
         #pragma warning disable IDE0051, IDE0060
@@ -81,7 +81,7 @@ namespace CKAN
         /// <summary>
         /// Record the given module version as being available.
         /// </summary>
-        private void Add(CkanModule module)
+        private void Add(ReleaseDto module)
         {
             if (!module.identifier.Equals(identifier))
             {
@@ -102,20 +102,20 @@ namespace CKAN
         /// <param name="installed">Modules that are already installed</param>
         /// <param name="toInstall">Modules that are planned to be installed</param>
         /// <returns></returns>
-        public CkanModule? Latest(StabilityToleranceConfig         stabilityTolerance,
+        public ReleaseDto? Latest(StabilityToleranceConfig         stabilityTolerance,
                                   GameVersionCriteria?             ksp_version  = null,
                                   RelationshipDescriptor?          relationship = null,
-                                  IReadOnlyCollection<CkanModule>? installed    = null,
-                                  IReadOnlyCollection<CkanModule>? toInstall    = null)
+                                  IReadOnlyCollection<ReleaseDto>? installed    = null,
+                                  IReadOnlyCollection<ReleaseDto>? toInstall    = null)
             => Latest(stabilityTolerance.ModStabilityTolerance(identifier)
                       ?? stabilityTolerance.OverallStabilityTolerance,
                       ksp_version, relationship, installed, toInstall);
 
-        public CkanModule? Latest(ReleaseStatus                    stabilityTolerance,
+        public ReleaseDto? Latest(ReleaseStatus                    stabilityTolerance,
                                   GameVersionCriteria?             ksp_version  = null,
                                   RelationshipDescriptor?          relationship = null,
-                                  IReadOnlyCollection<CkanModule>? installed    = null,
-                                  IReadOnlyCollection<CkanModule>? toInstall    = null)
+                                  IReadOnlyCollection<ReleaseDto>? installed    = null,
+                                  IReadOnlyCollection<ReleaseDto>? toInstall    = null)
         {
             var modules = module_version.Values
                                         .Where(m => m.release_status <= stabilityTolerance)
@@ -171,13 +171,13 @@ namespace CKAN
         /// <summary>
         /// Returns the module with the specified version, or null if that does not exist.
         /// </summary>
-        public CkanModule? ByVersion(ModuleVersion v)
+        public ReleaseDto? ByVersion(ModuleVersion v)
             => module_version.GetValueOrDefault(v);
 
         /// <summary>
         /// Some code may expect this to be sorted in descending order
         /// </summary>
-        public IEnumerable<CkanModule> AllAvailable()
+        public IEnumerable<ReleaseDto> AllAvailable()
             => module_version.Values.Reverse();
 
         /// <summary>
@@ -201,6 +201,26 @@ namespace CKAN
             return sw.ToString();
         }
 
-        private static readonly ILog log = LogManager.GetLogger(typeof(AvailableModule));
+        private static readonly ILog log = LogManager.GetLogger(typeof(ModuleDto));
+
+        public bool Equals(ModuleDto? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return identifier == other.identifier;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((ModuleDto)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return identifier.GetHashCode();
+        }
     }
 }

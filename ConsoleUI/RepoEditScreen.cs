@@ -20,8 +20,8 @@ namespace CKAN.ConsoleUI {
         /// <param name="userAgent">HTTP useragent string to use</param>
         public RepoEditScreen(ConsoleTheme                         theme,
                               IGame                                game,
-                              SortedDictionary<string, Repository> reps,
-                              Repository                           repo,
+                              SortedDictionary<string, RepositoryDto> reps,
+                              RepositoryDto                           repo,
                               string?                              userAgent)
             : base(theme, game, reps, repo.name, repo.uri.ToString(), userAgent)
         {
@@ -47,14 +47,14 @@ namespace CKAN.ConsoleUI {
                 // They changed the name, so we have to
                 // remove and re-add it.
                 editList.Remove(repository.name);
-                editList.Add(name.Value, new Repository(name.Value, url.Value));
+                editList.Add(name.Value, new RepositoryDto(name.Value, url.Value));
             } else {
                 // Only the URL changed, so we can just set it
                 repository.uri = new Uri(url.Value);
             }
         }
 
-        private readonly Repository repository;
+        private readonly RepositoryDto repository;
     }
 
 }

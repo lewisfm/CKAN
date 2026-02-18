@@ -141,8 +141,8 @@ namespace CKAN.GUI
                                     (r1, r2) => r1 == r2);
                                 dfd.ShowDialog(this);
                             });
-                            var skip  = dfd?.Wait()?.Select(r => r as Repository)
-                                                    .OfType<Repository>()
+                            var skip  = dfd?.Wait()?.Select(r => r as RepositoryDto)
+                                                    .OfType<RepositoryDto>()
                                                     .ToArray();
                             var abort = dfd?.Abort;
                             dfd?.Dispose();

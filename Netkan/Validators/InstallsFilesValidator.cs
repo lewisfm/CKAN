@@ -25,7 +25,7 @@ namespace CKAN.NetKAN.Validators
 
         public void Validate(Metadata metadata)
         {
-            var mod = CkanModule.FromJson(metadata.AllJson.ToString());
+            var mod = ReleaseDto.FromJson(metadata.AllJson.ToString());
             if (!mod.IsDLC && _http.DownloadModule(metadata) is string file)
             {
                 // Make sure this would actually generate an install.

@@ -11,7 +11,7 @@ using CKAN.Extensions;
 
 namespace CKAN
 {
-    using ModPair = KeyValuePair<CkanModule, CkanModule?>;
+    using ModPair = KeyValuePair<ReleaseDto, ReleaseDto?>;
 
     /// <summary>
     /// Resolves relationships between mods. Primarily used to satisfy missing dependencies and to check for conflicts on proposed installs.
@@ -27,8 +27,8 @@ namespace CKAN
         /// <param name="registry">CKAN registry object for current game instance</param>
         /// <param name="game">The game to mention in error messages</param>
         /// <param name="versionCrit">The current game version criteria to consider</param>
-        public RelationshipResolver(IEnumerable<CkanModule>     modulesToInstall,
-                                    IEnumerable<CkanModule>?    modulesToRemove,
+        public RelationshipResolver(IEnumerable<ReleaseDto>     modulesToInstall,
+                                    IEnumerable<ReleaseDto>?    modulesToRemove,
                                     RelationshipResolverOptions options,
                                     IRegistryQuerier            registry,
                                     IGame                       game,
@@ -41,7 +41,7 @@ namespace CKAN
 
             installed_modules = registry.InstalledModules
                                         .Select(i_module => i_module.Module)
-                                        .Except(modulesToRemove ?? Enumerable.Empty<CkanModule>())
+                                        .Except(modulesToRemove ?? Enumerable.Empty<ReleaseDto>())
                                         .ToHashSet();
             var installed_relationship = new SelectionReason.Installed();
             foreach (var module in installed_modules)
@@ -76,7 +76,7 @@ namespace CKAN
         /// Add modules to consideration of the relationship resolver.
         /// </summary>
         /// <param name="modules">Modules to attempt to install</param>
-        private void AddModulesToInstall(CkanModule[] modules)
+        private void AddModulesToInstall(ReleaseDto[] modules)
         {
             log.DebugFormat("Processing relationships for {0} modules", modules.Length);
 
@@ -86,7 +86,7 @@ namespace CKAN
             // virtual packages.
 
             // This part can't be parallel, to preserve order of processing
-            foreach (CkanModule module in modules)
+            foreach (ReleaseDto module in modules)
             {
                 log.DebugFormat("Preparing to resolve relationships for {0} {1}", module.identifier, module.version);
 
@@ -94,7 +94,7 @@ namespace CKAN
                 var conflictingModules = modlist.Values
                                                 .Concat(installed_modules)
                                                 .Where(listed_mod => listed_mod.ConflictsWith(module));
-                foreach (CkanModule listed_mod in conflictingModules)
+                foreach (ReleaseDto listed_mod in conflictingModules)
                 {
                     if (options.proceed_with_inconsistencies)
                     {
@@ -141,7 +141,7 @@ namespace CKAN
         /// Resolves all relationships for a module.
         /// May recurse to ResolveStanza, which may add additional modules to be installed.
         /// </summary>
-        private void Resolve(CkanModule                           module,
+        private void Resolve(ReleaseDto                           module,
                              RelationshipResolverOptions          options,
                              IEnumerable<RelationshipDescriptor>? old_stanza = null)
         {
@@ -225,7 +225,7 @@ namespace CKAN
                 // If we already have this dependency covered,
                 // resolve its relationships if we haven't already
                 if (descriptor.MatchesAny(modlist.Values, null, null,
-                                          out CkanModule? installingCandidate)
+                                          out ReleaseDto? installingCandidate)
                     && installingCandidate != null)
                 {
                     log.DebugFormat("Match already in changeset: {0}, adding reason {1}",
@@ -263,7 +263,7 @@ namespace CKAN
                 if (descriptor.MatchesAny(installed_modules,
                                           dlls,
                                           registry.InstalledDlc,
-                                          out CkanModule? installedCandidate))
+                                          out ReleaseDto? installedCandidate))
                 {
                     if (installedCandidate != null)
                     {
@@ -278,7 +278,7 @@ namespace CKAN
                     continue;
                 }
 
-                IReadOnlyList<CkanModule>? candidates = null;
+                IReadOnlyList<ReleaseDto>? candidates = null;
                 try
                 {
                     candidates = resolved.Candidates(descriptor,
@@ -326,7 +326,7 @@ namespace CKAN
                             throw new TooManyModsProvideKraken(rel.Parent, descriptor.ToString() ?? "",
                                                                candidates, descriptor.choice_help_text);
                         }
-                        candidates = new List<CkanModule> { provide.First() };
+                        candidates = new List<ReleaseDto> { provide.First() };
                     }
                     else if (reason is SelectionReason.RelationshipReason rel)
                     {
@@ -335,7 +335,7 @@ namespace CKAN
                     }
                 }
 
-                CkanModule candidate = candidates.Single();
+                ReleaseDto candidate = candidates.Single();
 
                 // Finally, check our candidate against everything which might object
                 // to it being installed; that's all the mods which are fixed in our
@@ -369,7 +369,7 @@ namespace CKAN
             }
         }
 
-        private string conflictingModDescription(CkanModule? mod, CkanModule? parent)
+        private string conflictingModDescription(ReleaseDto? mod, ReleaseDto? parent)
             => mod == null
                 ? Properties.Resources.RelationshipResolverAnUnmanaged
                 : parent == null && ReasonsFor(mod).Any(r => r is SelectionReason.UserRequested
@@ -385,11 +385,11 @@ namespace CKAN
         /// Adds the specified module to the list of modules we're installing.
         /// This also adds its provides list to what we have available.
         /// </summary>
-        private void Add(CkanModule module, SelectionReason reason)
+        private void Add(ReleaseDto module, SelectionReason reason)
         {
             log.DebugFormat("Adding {0} {1}", module.identifier, module.version);
 
-            if (modlist.TryGetValue(module.identifier, out CkanModule? possibleDup))
+            if (modlist.TryGetValue(module.identifier, out ReleaseDto? possibleDup))
             {
                 if (possibleDup.identifier == module.identifier)
                 {
@@ -440,7 +440,7 @@ namespace CKAN
         /// Returns a list of all modules to install to satisfy the changes required.
         /// Each mod is after its dependencies and before its reverse dependencies.
         /// </summary>
-        public IEnumerable<CkanModule> ModList(bool parallel = true)
+        public IEnumerable<ReleaseDto> ModList(bool parallel = true)
             => modlist.Values.Distinct()
                              .AsParallelIf(parallel)
                              // Put user choices at the bottom; .OrderBy(bool) -> false first
@@ -450,8 +450,8 @@ namespace CKAN
                              // Resolve ties in name order
                              .ThenBy(m => m.name);
 
-        public bool ReadyToInstall(CkanModule                      mod,
-                                   IReadOnlyCollection<CkanModule> installed)
+        public bool ReadyToInstall(ReleaseDto                      mod,
+                                   IReadOnlyCollection<ReleaseDto> installed)
             => !modlist.Values.Distinct()
                               .Where(m => m != mod)
                               .Except(installed)
@@ -461,7 +461,7 @@ namespace CKAN
                               .Contains(mod);
 
         // The more nodes of the reverse-dependency graph we can paint, the higher up in the list it goes
-        private int totalDependers(CkanModule module)
+        private int totalDependers(ReleaseDto module)
             => allDependers(module).Count();
 
         private static IEnumerable<T> BreadthFirstSearch<T>(IEnumerable<T>                      startingGroup,
@@ -482,15 +482,15 @@ namespace CKAN
             }
         }
 
-        private IEnumerable<CkanModule> allDependers(CkanModule module)
+        private IEnumerable<ReleaseDto> allDependers(ReleaseDto module)
             => BreadthFirstSearch(Enumerable.Repeat(module, 1),
                                   (searching, found) =>
                                       ReasonsFor(searching).OfType<SelectionReason.RelationshipReason>()
                                                            .Select(r => r.Parent)
-                                                           .OfType<CkanModule>()
+                                                           .OfType<ReleaseDto>()
                                                            .Except(found));
 
-        public IEnumerable<CkanModule> Dependencies()
+        public IEnumerable<ReleaseDto> Dependencies()
             => BreadthFirstSearch(user_requested_mods.Where(m => !suppressedRecommenders.Any(rel => rel.WithinBounds(m))),
                                   (searching, found) =>
                                       modlist.Values
@@ -498,15 +498,15 @@ namespace CKAN
                                              .Where(m => ReasonsFor(m).Any(r => r is SelectionReason.Depends dep
                                                                                 && dep.Parent == searching)));
 
-        public IEnumerable<CkanModule> Recommendations(HashSet<CkanModule> dependencies)
+        public IEnumerable<ReleaseDto> Recommendations(HashSet<ReleaseDto> dependencies)
             => modlist.Values.Except(dependencies)
                              .Where(m => ValidRecSugReasons(dependencies,
                                                             ReasonsFor(m).OfType<SelectionReason.Recommended>()
                                                                          .ToArray()))
                              .OrderByDescending(totalDependers);
 
-        public IEnumerable<CkanModule> Suggestions(HashSet<CkanModule>             dependencies,
-                                                   IReadOnlyCollection<CkanModule> recommendations)
+        public IEnumerable<ReleaseDto> Suggestions(HashSet<ReleaseDto>             dependencies,
+                                                   IReadOnlyCollection<ReleaseDto> recommendations)
             => modlist.Values.Except(dependencies)
                              .Except(recommendations)
                              .Where(m => ValidRecSugReasons(dependencies,
@@ -514,15 +514,15 @@ namespace CKAN
                                                                          .ToArray()))
                              .OrderByDescending(totalDependers);
 
-        private bool ValidRecSugReasons(HashSet<CkanModule>                  dependencies,
+        private bool ValidRecSugReasons(HashSet<ReleaseDto>                  dependencies,
                                         SelectionReason.RelationshipReason[] recSugReasons)
             => recSugReasons.Any(r => dependencies.Contains(r.Parent))
                && !suppressedRecommenders.Any(rel => recSugReasons.Any(r => r.Parent != null
                                                                             && rel.WithinBounds(r.Parent)));
 
-        public ParallelQuery<KeyValuePair<CkanModule, HashSet<string>>> Supporters(
-            HashSet<CkanModule>     supported,
-            IEnumerable<CkanModule> toExclude)
+        public ParallelQuery<KeyValuePair<ReleaseDto, HashSet<string>>> Supporters(
+            HashSet<ReleaseDto>     supported,
+            IEnumerable<ReleaseDto> toExclude)
             => registry.CompatibleModules(options.stability_tolerance ?? new StabilityToleranceConfig(""),
                                           versionCrit)
                        .Except(toExclude)
@@ -531,7 +531,7 @@ namespace CKAN
                        .Where(mod => !registry.IsInstalled(mod.identifier)
                                      && mod.supports != null)
                        // Find each module that "supports" something we're installing
-                       .Select(mod => new KeyValuePair<CkanModule, HashSet<string>>(
+                       .Select(mod => new KeyValuePair<ReleaseDto, HashSet<string>>(
                                           mod,
                                           (mod.supports ?? Enumerable.Empty<RelationshipDescriptor>())
                                              .Where(rel => rel.MatchesAny(supported, null, null))
@@ -546,9 +546,9 @@ namespace CKAN
         /// The keys are the mods that the user chose that led to the conflict being in the list!
         /// Use this for coloring/labelling rows, use ConflictDescriptions for reporting the conflicts to the user.
         /// </summary>
-        public Dictionary<CkanModule, string> ConflictList
+        public Dictionary<ReleaseDto, string> ConflictList
             => conflicts
-                .SelectMany(kvp => UserReasonsFor(kvp.Key).Select(k => new KeyValuePair<CkanModule, ModPair>(k, kvp)))
+                .SelectMany(kvp => UserReasonsFor(kvp.Key).Select(k => new KeyValuePair<ReleaseDto, ModPair>(k, kvp)))
                 .GroupBy(kvp => kvp.Key)
                 .ToDictionary(group => group.Key,
                               group => string.Join(", ", group.Select(kvp => kvp.Value)
@@ -574,12 +574,12 @@ namespace CKAN
 
         public bool IsConsistent => conflicts.Count == 0;
 
-        public List<SelectionReason> ReasonsFor(CkanModule mod)
+        public List<SelectionReason> ReasonsFor(ReleaseDto mod)
             => reasons.TryGetValue(mod, out List<SelectionReason>? r)
                 ? r
                 : new List<SelectionReason>();
 
-        public IEnumerable<CkanModule> UserReasonsFor(CkanModule mod)
+        public IEnumerable<ReleaseDto> UserReasonsFor(ReleaseDto mod)
             => allDependers(mod).Intersect(user_requested_mods);
 
         /// <summary>
@@ -591,12 +591,12 @@ namespace CKAN
         /// <returns>
         /// true if auto-installed, false otherwise
         /// </returns>
-        public bool IsAutoInstalled(CkanModule mod)
+        public bool IsAutoInstalled(ReleaseDto mod)
             => ReasonsFor(mod).All(reason => reason is SelectionReason.Depends dep
                                              && dep.Parent != null
                                              && !dep.Parent.IsMetapackage);
 
-        private void AddReason(CkanModule module, SelectionReason reason)
+        private void AddReason(ReleaseDto module, SelectionReason reason)
         {
             if (reasons.TryGetValue(module, out List<SelectionReason>? modReasons))
             {
@@ -613,12 +613,12 @@ namespace CKAN
         /// <summary>
         /// The list of all additional mods that need to be installed to satisfy all relationships.
         /// </summary>
-        private readonly Dictionary<string, CkanModule> modlist = new Dictionary<string, CkanModule>();
-        private readonly List<CkanModule> user_requested_mods = new List<CkanModule>();
+        private readonly Dictionary<string, ReleaseDto> modlist = new Dictionary<string, ReleaseDto>();
+        private readonly List<ReleaseDto> user_requested_mods = new List<ReleaseDto>();
 
         private readonly List<ModPair> conflicts = new List<ModPair>();
-        private readonly Dictionary<CkanModule, List<SelectionReason>> reasons =
-            new Dictionary<CkanModule, List<SelectionReason>>();
+        private readonly Dictionary<ReleaseDto, List<SelectionReason>> reasons =
+            new Dictionary<ReleaseDto, List<SelectionReason>>();
 
         private readonly HashSet<string> dlls;
 
@@ -636,9 +636,9 @@ namespace CKAN
         /// <summary>
         /// The list of already installed modules.
         /// </summary>
-        private readonly HashSet<CkanModule> installed_modules;
+        private readonly HashSet<ReleaseDto> installed_modules;
 
-        private readonly HashSet<CkanModule> alreadyResolved = new HashSet<CkanModule>();
+        private readonly HashSet<ReleaseDto> alreadyResolved = new HashSet<ReleaseDto>();
 
         private static readonly ILog log = LogManager.GetLogger(typeof(RelationshipResolver));
     }

@@ -20,16 +20,16 @@ using CKAN.Games;
 
 namespace CKAN
 {
-    using ArchiveEntry = Tuple<CkanModule?,
+    using ArchiveEntry = Tuple<ReleaseDto?,
                                SortedDictionary<string, int>?,
                                GameVersion[]?,
-                               Repository[]?,
+                               RepositoryDto[]?,
                                long>;
 
-    using ArchiveList = Tuple<List<CkanModule>,
+    using ArchiveList = Tuple<List<ReleaseDto>,
                               SortedDictionary<string, int>?,
                               GameVersion[]?,
-                              Repository[]?,
+                              RepositoryDto[]?,
                               bool>;
 
     /// <summary>
@@ -41,8 +41,8 @@ namespace CKAN
         /// The available modules from this repository
         /// </summary>
         [JsonProperty("available_modules", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(JsonParallelDictionaryConverter<AvailableModule>))]
-        public readonly Dictionary<string, AvailableModule>? AvailableModules;
+        [JsonConverter(typeof(JsonParallelDictionaryConverter<ModuleDto>))]
+        public readonly Dictionary<string, ModuleDto>? AvailableModules;
 
         /// <summary>
         /// The download counts from this repository's download_counts.json
@@ -62,7 +62,7 @@ namespace CKAN
         /// Currently not used, maybe in the future
         /// </summary>
         [JsonProperty("repositories", NullValueHandling = NullValueHandling.Ignore)]
-        public readonly Repository[]? Repositories;
+        public readonly RepositoryDto[]? Repositories;
 
         /// <summary>
         /// true if any module we found requires a newer client version, false otherwise
@@ -70,10 +70,10 @@ namespace CKAN
         [JsonIgnore]
         public readonly bool UnsupportedSpec;
 
-        private RepositoryData(Dictionary<string, AvailableModule> modules,
+        private RepositoryData(Dictionary<string, ModuleDto> modules,
                                SortedDictionary<string, int>       counts,
                                GameVersion[]                       versions,
-                               Repository[]                        repos)
+                               RepositoryDto[]                        repos)
         {
             AvailableModules  = modules;
             DownloadCounts    = counts;
@@ -89,18 +89,18 @@ namespace CKAN
         /// <param name="versions">Game versions in this repo</param>
         /// <param name="repos">Contents of repositories.json in this repo</param>
         /// <param name="unsupportedSpec">true if any module we found requires a newer client version, false otherwise</param>
-        public RepositoryData(IEnumerable<CkanModule>?       modules,
+        public RepositoryData(IEnumerable<ReleaseDto>?       modules,
                               SortedDictionary<string, int>? counts,
                               IEnumerable<GameVersion>?      versions,
-                              IEnumerable<Repository>?       repos,
+                              IEnumerable<RepositoryDto>?       repos,
                               bool                           unsupportedSpec)
-            : this((modules ?? Enumerable.Empty<CkanModule>())
+            : this((modules ?? Enumerable.Empty<ReleaseDto>())
                            .GroupBy(m => m.identifier)
                            .ToDictionary(grp => grp.Key,
-                                         grp => new AvailableModule(grp.Key, grp)),
+                                         grp => new ModuleDto(grp.Key, grp)),
                    counts ?? new SortedDictionary<string, int>(),
                    (versions ?? Enumerable.Empty<GameVersion>()).ToArray(),
-                   (repos ?? Enumerable.Empty<Repository>()).ToArray())
+                   (repos ?? Enumerable.Empty<RepositoryDto>()).ToArray())
         {
             UnsupportedSpec   = unsupportedSpec;
         }
@@ -193,10 +193,10 @@ namespace CKAN
             using (var gzipStream     = new GZipInputStream(progressStream))
             using (var tarStream      = new TarInputStream(gzipStream, Encoding.UTF8))
             {
-                (List<CkanModule>               modules,
+                (List<ReleaseDto>               modules,
                  SortedDictionary<string, int>? counts,
                  GameVersion[]?                 versions,
-                 Repository[]?                  repos,
+                 RepositoryDto[]?                  repos,
                  bool                           unsupSpec) = AggregateArchiveEntries(archiveEntriesFromTar(tarStream, game));
                 return new RepositoryData(modules, counts, versions, repos, unsupSpec);
             }
@@ -251,10 +251,10 @@ namespace CKAN
             using (var progressStream = new ReadProgressStream(inputStream, progress))
             using (var zipfile = new ZipFile(progressStream))
             {
-                (List<CkanModule>               modules,
+                (List<ReleaseDto>               modules,
                  SortedDictionary<string, int>? counts,
                  GameVersion[]?                 versions,
-                 Repository[]?                  repos,
+                 RepositoryDto[]?                  repos,
                  bool                           unsupSpec) = AggregateArchiveEntries(archiveEntriesFromZip(zipfile, game));
                 zipfile.Close();
                 return new RepositoryData(modules, counts, versions, repos, unsupSpec);
@@ -272,7 +272,7 @@ namespace CKAN
                                            entry.Offset));
 
         private static ArchiveList AggregateArchiveEntries(ParallelQuery<ArchiveEntry?> entries)
-            => entries.Aggregate(new ArchiveList(new List<CkanModule>(), null, null, null, false),
+            => entries.Aggregate(new ArchiveList(new List<ReleaseDto>(), null, null, null, false),
                                  (subtotal, item) =>
                                     item == null
                                          ? subtotal
@@ -323,15 +323,15 @@ namespace CKAN
                                    null,
                                    JObject.Parse(getContents() ?? "")
                                           ?["repositories"]
-                                          ?.ToObject<Repository[]>(),
+                                          ?.ToObject<RepositoryDto[]>(),
                                    position)
             : null;
 
-        private static CkanModule? ProcessRegistryMetadataFromJSON(string metadata, string filename)
+        private static ReleaseDto? ProcessRegistryMetadataFromJSON(string metadata, string filename)
         {
             try
             {
-                CkanModule module = CkanModule.FromJson(metadata);
+                ReleaseDto module = ReleaseDto.FromJson(metadata);
                 // FromJson can return null for the empty string
                 if (module != null)
                 {

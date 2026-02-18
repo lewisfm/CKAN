@@ -225,7 +225,7 @@ namespace CKAN.CmdLine
                               new string('-', priorityWidth),
                               new string('-', nameWidth),
                               new string('-', urlWidth));
-            foreach (Repository repository in repositories.Values.OrderBy(r => r.priority))
+            foreach (RepositoryDto repository in repositories.Values.OrderBy(r => r.priority))
             {
                 user.RaiseMessage(columnFormat,
                                   repository.priority.ToString().PadRight(priorityWidth),
@@ -286,7 +286,7 @@ namespace CKAN.CmdLine
                     return Exit.BADOPT;
                 }
 
-                manager.registry.RepositoriesAdd(new Repository(options.name, options.uri,
+                manager.registry.RepositoriesAdd(new RepositoryDto(options.name, options.uri,
                                                                 manager.registry.Repositories.Count));
 
                 user.RaiseMessage(Properties.Resources.RepoAdded,
@@ -308,7 +308,7 @@ namespace CKAN.CmdLine
                 return Exit.BADOPT;
             }
             var manager = RegistryManager.Instance(MainClass.GetGameInstance(Manager), repoData);
-            if (manager.registry.Repositories is ReadOnlyDictionary<string, Repository> repositories)
+            if (manager.registry.Repositories is ReadOnlyDictionary<string, RepositoryDto> repositories)
             {
                 if (options.priority < 0 || options.priority >= repositories.Count)
                 {
@@ -318,7 +318,7 @@ namespace CKAN.CmdLine
                     return Exit.BADOPT;
                 }
 
-                if (repositories.TryGetValue(options.name, out Repository? repo))
+                if (repositories.TryGetValue(options.name, out RepositoryDto? repo))
                 {
                     if (options.priority != repo.priority)
                     {
@@ -367,7 +367,7 @@ namespace CKAN.CmdLine
             RegistryManager manager = RegistryManager.Instance(MainClass.GetGameInstance(Manager), repoData);
             log.DebugFormat("About to forget repository '{0}'", options.name);
 
-            if (manager.registry.Repositories is ReadOnlyDictionary<string, Repository> repos)
+            if (manager.registry.Repositories is ReadOnlyDictionary<string, RepositoryDto> repos)
             {
                 var name = options.name;
                 if (!repos.ContainsKey(options.name))
@@ -403,20 +403,20 @@ namespace CKAN.CmdLine
             var inst = MainClass.GetGameInstance(Manager);
             var uri = options.uri ?? inst.Game.DefaultRepositoryURL.ToString();
 
-            log.DebugFormat("About to add repository '{0}' - '{1}'", Repository.default_ckan_repo_name, uri);
+            log.DebugFormat("About to add repository '{0}' - '{1}'", RepositoryDto.default_ckan_repo_name, uri);
             RegistryManager manager = RegistryManager.Instance(inst, repoData);
-            if (manager.registry.Repositories is ReadOnlyDictionary<string, Repository> repositories)
+            if (manager.registry.Repositories is ReadOnlyDictionary<string, RepositoryDto> repositories)
             {
-                if (repositories.ContainsKey(Repository.default_ckan_repo_name))
+                if (repositories.ContainsKey(RepositoryDto.default_ckan_repo_name))
                 {
-                    manager.registry.RepositoriesRemove(Repository.default_ckan_repo_name);
+                    manager.registry.RepositoriesRemove(RepositoryDto.default_ckan_repo_name);
                 }
 
                 manager.registry.RepositoriesAdd(
-                    new Repository(Repository.default_ckan_repo_name, uri, repositories.Count));
+                    new RepositoryDto(RepositoryDto.default_ckan_repo_name, uri, repositories.Count));
 
                 user.RaiseMessage(Properties.Resources.RepoSet,
-                                  Repository.default_ckan_repo_name,
+                                  RepositoryDto.default_ckan_repo_name,
                                   uri);
                 manager.Save();
 

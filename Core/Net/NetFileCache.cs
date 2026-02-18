@@ -329,14 +329,14 @@ namespace CKAN
             }
         }
 
-        private static int compareFiles(IReadOnlyDictionary<string, List<CkanModule>> hashMap, FileInfo a, FileInfo b)
+        private static int compareFiles(IReadOnlyDictionary<string, List<ReleaseDto>> hashMap, FileInfo a, FileInfo b)
         {
             // Compatible modules for file A
-            hashMap.TryGetValue(a.Name[..8], out List<CkanModule>? modulesA);
+            hashMap.TryGetValue(a.Name[..8], out List<ReleaseDto>? modulesA);
             bool compatA = modulesA?.Any() ?? false;
 
             // Compatible modules for file B
-            hashMap.TryGetValue(b.Name[..8], out List<CkanModule>? modulesB);
+            hashMap.TryGetValue(b.Name[..8], out List<ReleaseDto>? modulesB);
             bool compatB = modulesB?.Any() ?? false;
 
             if (modulesA == null && modulesB != null)

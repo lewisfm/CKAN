@@ -49,7 +49,7 @@ namespace CKAN.NetKAN.Transformers
             }
             else
             {
-                var mod = CkanModule.FromJson(metadata.AllJson.ToString());
+                var mod = ReleaseDto.FromJson(metadata.AllJson.ToString());
                 using (var zip = new ZipFile(_http.DownloadModule(metadata)))
                 {
                     log.Debug("Extracting locales");

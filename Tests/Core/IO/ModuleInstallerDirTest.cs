@@ -24,7 +24,7 @@ namespace Tests.Core.IO
         private RegistryManager?     _registryManager;
         private CKAN.Registry?       _registry;
         private ModuleInstaller?     _installer;
-        private CkanModule?          _testModule;
+        private ReleaseDto?          _testModule;
         private string?              _gameDir;
         private string?              _gameDataDir;
         private IUser?               _nullUser;
@@ -47,7 +47,7 @@ namespace Tests.Core.IO
             _config    = new FakeConfiguration(_instance.KSP, _instance.KSP.Name);
             _manager   = new GameInstanceManager(_nullUser, _config);
             _registryManager = RegistryManager.Instance(_instance.KSP, repoData.Manager,
-                                                        new Repository[] { repo.repo });
+                                                        new RepositoryDto[] { repo.repo });
             _registry  = _registryManager.registry;
             _testModule = _registry.GetModuleByVersion("DogeCoinFlag", "1.01");
             Assert.IsNotNull(_testModule, "DogeCoinFlag 1.01 should exist");
@@ -60,7 +60,7 @@ namespace Tests.Core.IO
             _manager.Cache?.Store(_testModule!, testModFile, new Progress<long>(bytes => {}));
             HashSet<string>? possibleConfigOnlyDirs = null;
             _installer.InstallList(
-                new CkanModule[] { _testModule! },
+                new ReleaseDto[] { _testModule! },
                 new RelationshipResolverOptions(_instance.KSP.StabilityToleranceConfig),
                 _registryManager,
                 ref possibleConfigOnlyDirs);

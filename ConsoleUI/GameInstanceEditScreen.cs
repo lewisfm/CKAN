@@ -38,9 +38,9 @@ namespace CKAN.ConsoleUI {
             if (registry != null) {
 
                 // Need to edit a copy of the list so it doesn't save on cancel
-                repoEditList = new SortedDictionary<string, Repository>();
+                repoEditList = new SortedDictionary<string, RepositoryDto>();
                 foreach (var kvp in registry.Repositories) {
-                    repoEditList.Add(kvp.Key, new Repository(
+                    repoEditList.Add(kvp.Key, new RepositoryDto(
                         kvp.Value.name,
                         kvp.Value.uri.ToString(),
                         kvp.Value.priority
@@ -65,21 +65,21 @@ namespace CKAN.ConsoleUI {
                     th => th.LabelFg
                 ));
 
-                repoList = new ConsoleListBox<Repository>(
+                repoList = new ConsoleListBox<RepositoryDto>(
                     3, repoListTop, -3, repoListBottom,
-                    new List<Repository>(repoEditList.Values),
-                    new List<ConsoleListBoxColumn<Repository>>() {
-                        new ConsoleListBoxColumn<Repository>(
+                    new List<RepositoryDto>(repoEditList.Values),
+                    new List<ConsoleListBoxColumn<RepositoryDto>>() {
+                        new ConsoleListBoxColumn<RepositoryDto>(
                             Properties.Resources.InstanceEditRepoIndexHeader,
                             r => r.priority.ToString(),
                             null,
                             7),
-                        new ConsoleListBoxColumn<Repository>(
+                        new ConsoleListBoxColumn<RepositoryDto>(
                             Properties.Resources.InstanceEditRepoNameHeader,
                             r => r.name,
                             null,
                             16),
-                        new ConsoleListBoxColumn<Repository>(
+                        new ConsoleListBoxColumn<RepositoryDto>(
                             Properties.Resources.InstanceEditRepoURLHeader,
                             r => r.uri.ToString(),
                             null,
@@ -92,40 +92,40 @@ namespace CKAN.ConsoleUI {
                 repoList.AddBinding(Keys.A, sender =>
                 {
                     LaunchSubScreen(new RepoAddScreen(theme, instance.Game, repoEditList, userAgent));
-                    repoList.SetData(new List<Repository>(repoEditList.Values));
+                    repoList.SetData(new List<RepositoryDto>(repoEditList.Values));
                     return true;
                 });
                 repoList.AddTip("R", Properties.Resources.Remove);
                 repoList.AddBinding(Keys.R, sender =>
                 {
-                    if (repoList.Selection is Repository repo)
+                    if (repoList.Selection is RepositoryDto repo)
                     {
                         int oldPrio = repo.priority;
                         repoEditList.Remove(repo.name);
                         // Reshuffle the priorities to fill
-                        foreach (Repository r in repoEditList.Values) {
+                        foreach (RepositoryDto r in repoEditList.Values) {
                             if (r.priority > oldPrio) {
                                 --r.priority;
                             }
                         }
-                        repoList.SetData(new List<Repository>(repoEditList.Values));
+                        repoList.SetData(new List<RepositoryDto>(repoEditList.Values));
                     }
                     return true;
                 });
                 repoList.AddTip("E", Properties.Resources.Edit);
                 repoList.AddBinding(Keys.E, sender =>
                 {
-                    if (repoList.Selection is Repository repo)
+                    if (repoList.Selection is RepositoryDto repo)
                     {
                         LaunchSubScreen(new RepoEditScreen(theme, instance.Game, repoEditList, repo, userAgent));
-                        repoList.SetData(new List<Repository>(repoEditList.Values));
+                        repoList.SetData(new List<RepositoryDto>(repoEditList.Values));
                     }
                     return true;
                 });
                 repoList.AddTip("-", Properties.Resources.Up);
                 repoList.AddBinding(Keys.Minus, sender =>
                 {
-                    if (repoList.Selection is Repository repo)
+                    if (repoList.Selection is RepositoryDto repo)
                     {
                         if (repo.priority > 0) {
                             var prev = SortedDictFind(repoEditList,
@@ -134,7 +134,7 @@ namespace CKAN.ConsoleUI {
                                 ++prev.priority;
                             }
                             --repo.priority;
-                            repoList.SetData(new List<Repository>(repoEditList.Values));
+                            repoList.SetData(new List<RepositoryDto>(repoEditList.Values));
                         }
                     }
                     return true;
@@ -142,7 +142,7 @@ namespace CKAN.ConsoleUI {
                 repoList.AddTip("+", Properties.Resources.Down);
                 repoList.AddBinding(Keys.Plus, sender =>
                 {
-                    if (repoList.Selection is Repository repo)
+                    if (repoList.Selection is RepositoryDto repo)
                     {
                         var next = SortedDictFind(repoEditList,
                             r => r.priority == repo.priority + 1);
@@ -150,7 +150,7 @@ namespace CKAN.ConsoleUI {
                             --next.priority;
                         }
                         ++repo.priority;
-                        repoList.SetData(new List<Repository>(repoEditList.Values));
+                        repoList.SetData(new List<RepositoryDto>(repoEditList.Values));
                     }
                     return true;
                 });
@@ -265,8 +265,8 @@ namespace CKAN.ConsoleUI {
         private readonly RegistryManager? regMgr;
         private readonly Registry?        registry;
 
-        private readonly SortedDictionary<string, Repository>? repoEditList;
-        private readonly ConsoleListBox<Repository>?           repoList;
+        private readonly SortedDictionary<string, RepositoryDto>? repoEditList;
+        private readonly ConsoleListBox<RepositoryDto>?           repoList;
         private readonly List<GameVersion>?                    compatEditList;
         private readonly ConsoleListBox<GameVersion>?          compatList;
         private readonly ReleaseStatusComboButtons?            stabilityToleranceButtons;

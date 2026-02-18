@@ -61,7 +61,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var module1 = regMgr.registry.GetModuleByVersion(ident1, version1)!;
@@ -80,7 +80,7 @@ namespace Tests.CmdLine
                 // Assert
                 CollectionAssert.AreEqual(Enumerable.Empty<string>(),
                                           user.RaisedErrors);
-                CollectionAssert.AreEqual(new CkanModule[] { module2 },
+                CollectionAssert.AreEqual(new ReleaseDto[] { module2 },
                                           regMgr.registry.InstalledModules.Select(m => m.Module));
             }
         }
@@ -132,7 +132,7 @@ namespace Tests.CmdLine
             using (var config   = new FakeConfiguration(inst.KSP, inst.KSP.Name))
             using (var manager  = new GameInstanceManager(user, config))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 manager.SetCurrentInstance(inst.KSP);
                 var module1 = regMgr.registry.GetModuleByVersion(ident1, version1)!;
@@ -151,7 +151,7 @@ namespace Tests.CmdLine
                 // Assert
                 CollectionAssert.AreEqual(Enumerable.Empty<string>(),
                                           user.RaisedErrors);
-                CollectionAssert.AreEqual(new CkanModule[] { module2 },
+                CollectionAssert.AreEqual(new ReleaseDto[] { module2 },
                                           regMgr.registry.InstalledModules.Select(m => m.Module));
             }
         }

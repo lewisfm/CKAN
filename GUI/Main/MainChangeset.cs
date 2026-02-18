@@ -9,7 +9,7 @@ namespace CKAN.GUI
 {
     public partial class Main
     {
-        private void UpdateChangesDialog(List<ModChange> changeset, Dictionary<CkanModule, string>? conflicts)
+        private void UpdateChangesDialog(List<ModChange> changeset, Dictionary<ReleaseDto, string>? conflicts)
         {
             if (CurrentInstance != null)
             {
@@ -22,7 +22,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void Changeset_OnSelectedItemsChanged(CkanModule item)
+        private void Changeset_OnSelectedItemsChanged(ReleaseDto item)
         {
             if (MainTabControl.SelectedTab == ChangesetTabPage)
             {

@@ -22,7 +22,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void InstallationHistory_Install(CkanModule[] modules)
+        private void InstallationHistory_Install(ReleaseDto[] modules)
         {
             if (CurrentInstance != null && ManageMods.MainModList != null)
             {
@@ -48,7 +48,7 @@ namespace CKAN.GUI
             tabController.HideTab(InstallationHistoryTabPage.Name);
         }
 
-        private void InstallationHistory_OnSelectedModuleChanged(CkanModule m)
+        private void InstallationHistory_OnSelectedModuleChanged(ReleaseDto m)
         {
             if (CurrentInstance != null && Manager.Cache != null)
             {

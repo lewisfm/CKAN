@@ -700,14 +700,14 @@ namespace CKAN.GUI
             var crit = CurrentInstance.VersionCriteria();
 
             var installed = registry_manager.registry.InstalledModules.Select(inst => inst.Module).ToList();
-            var toInstall = new List<CkanModule>();
+            var toInstall = new List<ReleaseDto>();
             foreach (string path in files)
             {
-                CkanModule module;
+                ReleaseDto module;
 
                 try
                 {
-                    module = CkanModule.FromFile(path);
+                    module = ReleaseDto.FromFile(path);
                     if (module.IsMetapackage && module.depends != null)
                     {
                         // Add metapackage dependencies to the changeset so we can skip compat checks for them
@@ -719,7 +719,7 @@ namespace CKAN.GUI
                                 rel.ExactMatch(registry_manager.registry, stabilityTolerance, crit, installed, toInstall)
                                 // Otherwise look for incompatible
                                 ?? rel.ExactMatch(registry_manager.registry, stabilityTolerance, null, installed, toInstall))
-                            .OfType<CkanModule>());
+                            .OfType<ReleaseDto>());
                     }
                     toInstall.Add(module);
                 }
@@ -748,7 +748,7 @@ namespace CKAN.GUI
                                     .ToArray();
             if (modpacks.Any())
             {
-                CkanModule.GetMinMaxVersions(modpacks,
+                ReleaseDto.GetMinMaxVersions(modpacks,
                                              out _, out _,
                                              out GameVersion? minGame, out GameVersion? maxGame);
                 var filesRange = new GameVersionRange(minGame ?? GameVersion.Any,
@@ -849,7 +849,7 @@ namespace CKAN.GUI
             }
         }
 
-        private void ShowSelectionModInfo(CkanModule? module)
+        private void ShowSelectionModInfo(ReleaseDto? module)
         {
             if (CurrentInstance != null && configuration != null && Manager.Cache != null)
             {
@@ -869,7 +869,7 @@ namespace CKAN.GUI
         private void ShowSelectionModInfo(ListView.SelectedListViewItemCollection selection)
         {
             ShowSelectionModInfo(selection?.OfType<ListViewItem>()
-                                           .FirstOrDefault()?.Tag as CkanModule);
+                                           .FirstOrDefault()?.Tag as ReleaseDto);
         }
 
         private void ManageMods_OnChangeSetChanged(List<ModChange> changeset, Dictionary<GUIMod, string> conflicts)
@@ -937,7 +937,7 @@ namespace CKAN.GUI
                     break;
 
                 default:
-                    ShowSelectionModInfo(null as CkanModule);
+                    ShowSelectionModInfo(null as ReleaseDto);
                     break;
             }
         }

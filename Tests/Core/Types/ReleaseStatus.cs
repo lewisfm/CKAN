@@ -17,7 +17,7 @@ namespace Tests.Core.Types
         {
             Assert.DoesNotThrow(() =>
             {
-                var module = CkanModule.FromJson(
+                var module = ReleaseDto.FromJson(
                     Relationships.RelationshipResolverTests.MergeWithDefaults(
                         $@"{{
                             ""identifier"": ""aMod"",
@@ -37,7 +37,7 @@ namespace Tests.Core.Types
         {
             Assert.Throws<BadMetadataKraken>(delegate
             {
-                var module = CkanModule.FromJson(
+                var module = ReleaseDto.FromJson(
                     Relationships.RelationshipResolverTests.MergeWithDefaults(
                         $@"{{
                             ""identifier"": ""aMod"",
@@ -52,7 +52,7 @@ namespace Tests.Core.Types
             // According to the spec, no release status means "stable"
             Assert.DoesNotThrow(() =>
             {
-                var module = CkanModule.FromJson(
+                var module = ReleaseDto.FromJson(
                     Relationships.RelationshipResolverTests.MergeWithDefaults(
                         $@"{{
                             ""identifier"": ""aMod""
@@ -67,7 +67,7 @@ namespace Tests.Core.Types
             // According to the spec, no release status means "stable"
             Assert.DoesNotThrow(() =>
             {
-                var module = CkanModule.FromJson(
+                var module = ReleaseDto.FromJson(
                     Relationships.RelationshipResolverTests.MergeWithDefaults(
                         $@"{{
                             ""identifier"": ""aMod"",

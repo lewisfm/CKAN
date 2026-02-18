@@ -10,7 +10,7 @@ namespace CKAN
     /// </summary>
     public class StrictGameComparator : BaseGameComparator
     {
-        public override bool SingleVersionsCompatible(GameVersion gameVersion, CkanModule module)
+        public override bool SingleVersionsCompatible(GameVersion gameVersion, ReleaseDto module)
         {
             var gameVersionRange = gameVersion.ToVersionRange();
 

@@ -3,14 +3,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CKAN
 {
-    public class NameComparer : IEqualityComparer<CkanModule>
+    public class NameComparer : IEqualityComparer<ReleaseDto>
     {
         [ExcludeFromCodeCoverage]
-        public bool Equals(CkanModule? x, CkanModule? y)
+        public bool Equals(ReleaseDto? x, ReleaseDto? y)
             => x?.identifier.Equals(y?.identifier)
                 ?? (y == null);
 
-        public int GetHashCode(CkanModule obj)
+        public int GetHashCode(ReleaseDto obj)
             => obj.identifier.GetHashCode();
     }
 }

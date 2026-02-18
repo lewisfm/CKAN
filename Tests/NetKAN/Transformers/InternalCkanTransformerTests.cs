@@ -33,7 +33,7 @@ namespace Tests.NetKAN.Transformers
                 .Returns(filePath);
 
             mModuleService.Setup(i => i.GetInternalCkan(
-                    It.IsAny<CkanModule>(), It.IsAny<string>()))
+                    It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(internalCkan);
 
             var sut = new InternalCkanTransformer(mHttp.Object, mModuleService.Object);
@@ -72,7 +72,7 @@ namespace Tests.NetKAN.Transformers
                 .Returns(filePath);
 
             mModuleService.Setup(i => i.GetInternalCkan(
-                    It.IsAny<CkanModule>(), It.IsAny<string>()))
+                    It.IsAny<ReleaseDto>(), It.IsAny<string>()))
                 .Returns(internalCkan);
 
             var sut = new InternalCkanTransformer(mHttp.Object, mModuleService.Object);

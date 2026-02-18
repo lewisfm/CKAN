@@ -119,9 +119,9 @@ namespace Tests.CmdLine
                     sut.RunSubCommand(null, subOpts);
 
                     // Assert
-                    CollectionAssert.AreEqual(new Repository[]
+                    CollectionAssert.AreEqual(new RepositoryDto[]
                                               {
-                                                  new Repository("second", "https://host2.com/metadata.tar.gz"),
+                                                  new RepositoryDto("second", "https://host2.com/metadata.tar.gz"),
                                               },
                                               regMgr.registry.Repositories.Values);
                 }
@@ -152,7 +152,7 @@ namespace Tests.CmdLine
                 using (var regMgr = RegistryManager.Instance(manager.CurrentInstance!,
                                                              repoData.Manager))
                 {
-                    regMgr.registry.RepositoriesAdd(new Repository("alternate", "https://github.com/"));
+                    regMgr.registry.RepositoriesAdd(new RepositoryDto("alternate", "https://github.com/"));
                     sut.RunSubCommand(null, subOpts);
 
                     // Assert

@@ -38,12 +38,12 @@ namespace CKAN
         public string Summary =>
             BytesPerSecond > 0
                 ? string.Format(Properties.Resources.ByteRateCounterRateSummary,
-                                CkanModule.FmtSize(BytesPerSecond),
-                                CkanModule.FmtSize(BytesLeft),
+                                ReleaseDto.FmtSize(BytesPerSecond),
+                                ReleaseDto.FmtSize(BytesLeft),
                                 TimeLeftString,
                                 Percent)
                 : string.Format(Properties.Resources.ByteRateCounterSummary,
-                                CkanModule.FmtSize(BytesLeft),
+                                ReleaseDto.FmtSize(BytesLeft),
                                 Percent);
 
         public void Start() => progressTimer.Start();

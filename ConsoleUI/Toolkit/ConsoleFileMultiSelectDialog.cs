@@ -56,7 +56,7 @@ namespace CKAN.ConsoleUI.Toolkit {
 
             AddObject(new ConsoleLabel(
                 left + 3, bottom - 1, right - 3,
-                () => string.Format(Properties.Resources.FileSelectCountFooter, chosenFiles.Count, CkanModule.FmtSize(totalChosenSize())),
+                () => string.Format(Properties.Resources.FileSelectCountFooter, chosenFiles.Count, ReleaseDto.FmtSize(totalChosenSize())),
                 th => th.PopupBg,
                 th => th.PopupFg
             ));
@@ -230,7 +230,7 @@ namespace CKAN.ConsoleUI.Toolkit {
             => isDir(fi)
                 ? Properties.Resources.FileSelectDirSize
                 : fi is FileInfo file
-                    ? CkanModule.FmtSize(file.Length)
+                    ? ReleaseDto.FmtSize(file.Length)
                     : Properties.Resources.FileSelectDirSize;
 
         private long totalChosenSize()

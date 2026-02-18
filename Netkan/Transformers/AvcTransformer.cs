@@ -58,7 +58,7 @@ namespace CKAN.NetKAN.Transformers
                     json["version"] = "0"; // TODO: DBB: Dummy version necessary to the next statement doesn't throw
                 }
 
-                var mod = CkanModule.FromJson(json.ToString());
+                var mod = ReleaseDto.FromJson(json.ToString());
 
                 if (noVersion)
                 {

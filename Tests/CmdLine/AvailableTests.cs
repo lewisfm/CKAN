@@ -52,7 +52,7 @@ namespace Tests.CmdLine
                                       }"))
             using (var repoData = new TemporaryRepositoryData(new NullUser(), repo.repo))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo.repo }))
+                                                           new RepositoryDto[] { repo.repo }))
             {
                 ICommand sut   = new Available(repoData.Manager, user);
                 var      opts1 = new AvailableOptions()

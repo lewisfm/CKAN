@@ -110,8 +110,8 @@ namespace Tests.Data
                 }
             ";
 
-        public static readonly CkanModule DogeCoinFlag_101_LZMA_module =
-            CkanModule.FromJson(DogeCoinFlag_101_LZMA());
+        public static readonly ReleaseDto DogeCoinFlag_101_LZMA_module =
+            ReleaseDto.FromJson(DogeCoinFlag_101_LZMA());
 
         /// <summary>
         /// Test case for LZMA-format ZIPs
@@ -163,8 +163,8 @@ namespace Tests.Data
                 }
             ";
 
-        public static CkanModule DogeCoinFlag_101_bugged_module()
-            => CkanModule.FromJson(DogeCoinFlag_101_bugged());
+        public static ReleaseDto DogeCoinFlag_101_bugged_module()
+            => ReleaseDto.FromJson(DogeCoinFlag_101_bugged());
 
         ///<summary>
         /// DogeCoinFlag 1.01 info. This doesn't contain any bugs.
@@ -337,15 +337,15 @@ namespace Tests.Data
                 }
             ";
 
-        public static CkanModule DogeCoinFlag_101_module()
-            => CkanModule.FromJson(DogeCoinFlag_101());
+        public static ReleaseDto DogeCoinFlag_101_module()
+            => ReleaseDto.FromJson(DogeCoinFlag_101());
 
         /// <summary>
         /// The Doge Coin flag we all love, but using `find` install stanzas.
         /// </summary>
-        public static CkanModule DogeCoinFlag_101_module_find()
+        public static ReleaseDto DogeCoinFlag_101_module_find()
         {
-            CkanModule doge = DogeCoinFlag_101_module();
+            ReleaseDto doge = DogeCoinFlag_101_module();
 
             // Hand hack in the 'find' directive.
             doge.install![0].file = null;
@@ -358,9 +358,9 @@ namespace Tests.Data
         /// The Doge Coin flag using include_only and include_only_regexp.
         /// Won't install the same files as the other modules and the files don't make sense but I needed some module to test the include_only stuff
         /// </summary>
-        public static CkanModule DogeCoinFlag_101_module_include()
+        public static ReleaseDto DogeCoinFlag_101_module_include()
         {
-            CkanModule doge = DogeCoinFlag_101_module();
+            ReleaseDto doge = DogeCoinFlag_101_module();
 
             doge.install![0].filter = null;
             doge.install[0].filter_regexp = null;
@@ -370,11 +370,11 @@ namespace Tests.Data
             return doge;
         }
 
-        public static CkanModule DogeCoinFlag_101ZipSlip_module()
-            => CkanModule.FromJson(DogeCoinFlag_101ZipSlip());
+        public static ReleaseDto DogeCoinFlag_101ZipSlip_module()
+            => ReleaseDto.FromJson(DogeCoinFlag_101ZipSlip());
 
-        public static CkanModule DogeCoinFlag_101ZipBomb_module()
-            => CkanModule.FromJson(DogeCoinFlag_101ZipBomb());
+        public static ReleaseDto DogeCoinFlag_101ZipBomb_module()
+            => ReleaseDto.FromJson(DogeCoinFlag_101ZipBomb());
 
         // Identical to DogeCoinFlag_101, but with a spec version over 9000!
         public static string FutureMetaData()
@@ -446,8 +446,8 @@ namespace Tests.Data
                 }
             ";
 
-        public static CkanModule DogeCoinPlugin_module()
-            => CkanModule.FromJson(DogeCoinPlugin());
+        public static ReleaseDto DogeCoinPlugin_module()
+            => ReleaseDto.FromJson(DogeCoinPlugin());
 
         /// <summary>
         /// Adds a plugins directory to the DogeCoinFlag directory to test.
@@ -531,8 +531,8 @@ namespace Tests.Data
                 }
             ";
 
-        public static CkanModule RandSCapsuleDyneModule()
-            => CkanModule.FromJson(RandSCapsuleDyne());
+        public static ReleaseDto RandSCapsuleDyneModule()
+            => ReleaseDto.FromJson(RandSCapsuleDyne());
 
         // TestKAN in tar.gz format.
         public static Uri TestKANTarGz()
@@ -695,17 +695,17 @@ namespace Tests.Data
                     }
                 }";
 
-        public static CkanModule kOS_014_module()
-            => CkanModule.FromJson(kOS_014());
+        public static ReleaseDto kOS_014_module()
+            => ReleaseDto.FromJson(kOS_014());
 
-        public static CkanModule kOS_014_epoch_module()
-            => CkanModule.FromJson(kOS_014_epoch());
+        public static ReleaseDto kOS_014_epoch_module()
+            => ReleaseDto.FromJson(kOS_014_epoch());
 
         public static string KS_CustomAsteroids_string()
             => File.ReadAllText(DataFile("KS/CustomAsteroids.json"));
 
-        public static CkanModule FireSpitterModule()
-            => CkanModule.FromFile(DataFile("Firespitter-6.3.5.ckan"));
+        public static ReleaseDto FireSpitterModule()
+            => ReleaseDto.FromFile(DataFile("Firespitter-6.3.5.ckan"));
 
         public static string KspAvcJson()
             => File.ReadAllText(DataFile("ksp-avc.version"));
@@ -716,14 +716,14 @@ namespace Tests.Data
         public static string ModuleManagerModuleCkan()
             => DataFile("ModuleManager-2.5.1.ckan");
 
-        public static CkanModule ModuleManagerModule()
-            => CkanModule.FromFile(ModuleManagerModuleCkan());
+        public static ReleaseDto ModuleManagerModule()
+            => ReleaseDto.FromFile(ModuleManagerModuleCkan());
 
         public static string ModuleManagerZip()
             => DataFile("ModuleManager-2.5.1.zip");
 
-        public static CkanModule MissionModule()
-            => CkanModule.FromFile(DataFile("MissionTest-1.0.ckan"));
+        public static ReleaseDto MissionModule()
+            => ReleaseDto.FromFile(DataFile("MissionTest-1.0.ckan"));
 
         public static string MissionZip()
             => DataFile("MissionTest-1.0.zip");
@@ -731,8 +731,8 @@ namespace Tests.Data
         public static string BurnController()
             => File.ReadAllText(DataFile("BurnController-0.8.1.ckan"));
 
-        public static CkanModule BurnControllerModule()
-            => CkanModule.FromFile(DataFile("BurnController-0.8.1.ckan"));
+        public static ReleaseDto BurnControllerModule()
+            => ReleaseDto.FromFile(DataFile("BurnController-0.8.1.ckan"));
 
         public static string BurnControllerZip()
             => DataFile("BurnController-0.8.1.zip");
@@ -1000,7 +1000,7 @@ namespace Tests.Data
             Generator = generator;
         }
 
-        public CkanModule GenerateRandomModule(
+        public ReleaseDto GenerateRandomModule(
             GameVersion?                  ksp_version = null,
             List<RelationshipDescriptor>? conflicts   = null,
             List<RelationshipDescriptor>? depends     = null,
@@ -1008,7 +1008,7 @@ namespace Tests.Data
             List<string>?                 provides    = null,
             string?                       identifier  = null,
             ModuleVersion?                version     = null)
-            => new CkanModule(new ModuleVersion(1.ToString(CultureInfo.InvariantCulture)),
+            => new ReleaseDto(new ModuleVersion(1.ToString(CultureInfo.InvariantCulture)),
                               identifier ?? Generator.Next().ToString(CultureInfo.InvariantCulture),
                               Generator.Next().ToString(CultureInfo.InvariantCulture),
                               Generator.Next().ToString(CultureInfo.InvariantCulture),

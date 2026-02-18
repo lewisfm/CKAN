@@ -30,7 +30,7 @@ namespace Tests.NetKAN.Services
             var sut = new ModuleService(new KerbalSpaceProgram());
 
             // Act
-            var result = sut.HasInstallableFiles(CkanModule.FromJson(json.ToString()), zip);
+            var result = sut.HasInstallableFiles(ReleaseDto.FromJson(json.ToString()), zip);
 
             // Assert
             Assert.IsFalse(result,
@@ -48,7 +48,7 @@ namespace Tests.NetKAN.Services
             var sut = new ModuleService(new KerbalSpaceProgram());
 
             // Act
-            var result = sut.HasInstallableFiles(CkanModule.FromJson(json.ToString()), zip);
+            var result = sut.HasInstallableFiles(ReleaseDto.FromJson(json.ToString()), zip);
 
             // Assert
             Assert.IsTrue(result,
@@ -61,7 +61,7 @@ namespace Tests.NetKAN.Services
         {
             // Arrange
             var sut = new ModuleService(new KerbalSpaceProgram());
-            CkanModule mod = CkanModule.FromJson(TestData.DogeCoinFlag_101());
+            ReleaseDto mod = ReleaseDto.FromJson(TestData.DogeCoinFlag_101());
 
             // Act
             var result = sut.GetInternalCkan(mod, TestData.DogeCoinFlagZip());
@@ -89,7 +89,7 @@ namespace Tests.NetKAN.Services
             var sut = new ModuleService(new KerbalSpaceProgram());
 
             // Act
-            var result = sut.GetInternalAvc(CkanModule.FromJson(json.ToString()), TestData.DogeCoinFlagAvcZip());
+            var result = sut.GetInternalAvc(ReleaseDto.FromJson(json.ToString()), TestData.DogeCoinFlagAvcZip());
 
             // Assert
             Assert.That(result, Is.Not.Null,

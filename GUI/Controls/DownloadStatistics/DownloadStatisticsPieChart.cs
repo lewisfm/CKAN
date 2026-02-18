@@ -59,7 +59,7 @@ namespace CKAN.GUI
         }
 
         private static PieSlice HostSlice(KeyValuePair<string, long> kvp)
-            => new PieSlice($"{Environment.NewLine}{kvp.Key}{Environment.NewLine}({CkanModule.FmtSize(kvp.Value)})",
+            => new PieSlice($"{Environment.NewLine}{kvp.Key}{Environment.NewLine}({ReleaseDto.FmtSize(kvp.Value)})",
                             kvp.Value);
 
         private static PieSlice OtherSlice(IEnumerable<KeyValuePair<string, long>> smallSlices)

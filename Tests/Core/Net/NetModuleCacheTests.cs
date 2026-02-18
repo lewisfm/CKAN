@@ -52,7 +52,7 @@ namespace Tests.Core
                 Assert.AreEqual(2, storeCount);
                 Assert.IsTrue(cache.IsCached(module));
 
-                cache.Purge(new CkanModule[] { module });
+                cache.Purge(new ReleaseDto[] { module });
                 Assert.AreEqual(2, purgeCount);
                 Assert.IsFalse(cache.IsCached(module));
             }

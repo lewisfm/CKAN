@@ -33,7 +33,7 @@ namespace Tests.NetKAN.Transformers
 
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<CkanModule>(),
+            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<ReleaseDto>(),
                                                        It.IsAny<string>(),
                                                        It.IsAny<string>()))
                           .Returns(avcVersion);
@@ -76,7 +76,7 @@ namespace Tests.NetKAN.Transformers
 
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<CkanModule>(),
+            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<ReleaseDto>(),
                                                        It.IsAny<string>(),
                                                        It.IsAny<string>()))
                           .Returns(avcVersion);
@@ -232,7 +232,7 @@ namespace Tests.NetKAN.Transformers
 
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<CkanModule>(),
+            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<ReleaseDto>(),
                                                        It.IsAny<string>(),
                                                        It.IsAny<string>()))
                           .Returns(avcVersion);
@@ -268,7 +268,7 @@ namespace Tests.NetKAN.Transformers
 
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<CkanModule>(),
+            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<ReleaseDto>(),
                                                        It.IsAny<string>(),
                                                        It.IsAny<string>()))
                           .Returns(avcVersion);
@@ -301,7 +301,7 @@ namespace Tests.NetKAN.Transformers
             var mModuleService = new Mock<IModuleService>();
             mHttp.Setup(i => i.DownloadModule(It.IsAny<Metadata>()))
                  .Returns("");
-            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<CkanModule>(),
+            mModuleService.Setup(i => i.GetInternalAvc(It.IsAny<ReleaseDto>(),
                                                        It.IsAny<string>(),
                                                        It.IsAny<string>()))
                           .Returns(new AvcVersion()

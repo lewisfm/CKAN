@@ -35,7 +35,7 @@ namespace CKAN
         private readonly DateTime install_time;
 
         [JsonProperty]
-        private readonly CkanModule source_module;
+        private readonly ReleaseDto source_module;
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(false)]
@@ -49,7 +49,7 @@ namespace CKAN
 
         public IReadOnlyCollection<string> Files       => installed_files.Keys;
         public string                      identifier  => source_module.identifier;
-        public CkanModule                  Module      => source_module;
+        public ReleaseDto                  Module      => source_module;
         public DateTime                    InstallTime => install_time;
 
         public bool AutoInstalled
@@ -68,7 +68,7 @@ namespace CKAN
 
         #region Constructors
 
-        public InstalledModule(GameInstance? ksp, CkanModule module, IEnumerable<string> relative_files, bool autoInstalled)
+        public InstalledModule(GameInstance? ksp, ReleaseDto module, IEnumerable<string> relative_files, bool autoInstalled)
         {
             install_time = DateTime.Now;
             source_module = module;

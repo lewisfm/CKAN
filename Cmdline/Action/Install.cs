@@ -48,7 +48,7 @@ namespace CKAN.CmdLine
             }
 
             var regMgr = RegistryManager.Instance(instance, repoData);
-            List<CkanModule>? modules = null;
+            List<ReleaseDto>? modules = null;
 
             if (options?.ckan_files != null)
             {
@@ -61,7 +61,7 @@ namespace CKAN.CmdLine
                     log.DebugFormat("Urls: {0}", targets.SelectMany(t => t.urls));
                     new NetAsyncDownloader(new NullUser(), () => null, options.NetUserAgent).DownloadAndWait(targets);
                     log.DebugFormat("Files: {0}", targets.Select(t => t.filename));
-                    modules = targets.Select(t => CkanModule.FromFile(t.filename))
+                    modules = targets.Select(t => ReleaseDto.FromFile(t.filename))
                                      .ToList();
                 }
                 catch (FileNotFoundKraken kraken)
@@ -88,7 +88,7 @@ namespace CKAN.CmdLine
                                           .ToArray();
                 var crit        = instance.VersionCriteria();
                 Search.AdjustModulesCase(instance, registry, identifiers);
-                modules = identifiers.Select(arg => CkanModule.FromIDandVersion(
+                modules = identifiers.Select(arg => ReleaseDto.FromIDandVersion(
                                                         registry, arg,
                                                         (options?.allow_incompatible ?? false)
                                                             ? null
@@ -97,7 +97,7 @@ namespace CKAN.CmdLine
                                                                                 instance.StabilityToleranceConfig,
                                                                                 crit, null, installed)
                                                     ?? registry.InstalledModule(arg)?.Module)
-                                     .OfType<CkanModule>()
+                                     .OfType<ReleaseDto>()
                                      .ToList();
             }
 
@@ -118,7 +118,7 @@ namespace CKAN.CmdLine
                 without_enforce_consistency    = user.Headless,
             };
 
-            var autoInstalled = new HashSet<CkanModule>();
+            var autoInstalled = new HashSet<ReleaseDto>();
             for (bool done = false; !done; )
             {
                 // Install everything requested. :)

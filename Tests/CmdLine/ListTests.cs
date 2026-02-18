@@ -22,11 +22,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -34,7 +34,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             {
                 regMgr.registry.RepositoriesAdd(repo);
                 ICommand sut  = new List(repoData.Manager, user, Console.OpenStandardOutput());
@@ -128,11 +128,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -140,7 +140,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             {
                 regMgr.registry.RepositoriesAdd(repo);
                 ICommand sut  = new List(repoData.Manager, user, Console.OpenStandardOutput());
@@ -226,11 +226,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -238,7 +238,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 regMgr.registry.RepositoriesAdd(repo);
@@ -464,11 +464,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -476,7 +476,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 ICommand sut    = new List(repoData.Manager, user, output);
@@ -562,11 +562,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -574,7 +574,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 ICommand sut    = new List(repoData.Manager, user, output);
@@ -660,11 +660,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -672,7 +672,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 ICommand sut    = new List(repoData.Manager, user, output);
@@ -760,11 +760,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -772,7 +772,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 ICommand sut    = new List(repoData.Manager, user, output);
@@ -859,11 +859,11 @@ namespace Tests.CmdLine
         {
             // Arrange
             var user = new CapturingUser(false, q => true, (msg, objs) => 0);
-            var repo = new Repository("test", "https://github.com/");
+            var repo = new RepositoryDto("test", "https://github.com/");
             using (var inst     = new DisposableKSP(TestData.TestRegistry()))
             using (var repoData = new TemporaryRepositoryData(
                                       user,
-                                      new Dictionary<Repository, RepositoryData>
+                                      new Dictionary<RepositoryDto, RepositoryData>
                                       {
                                           {
                                               repo,
@@ -871,7 +871,7 @@ namespace Tests.CmdLine
                                           },
                                       }))
             using (var regMgr   = RegistryManager.Instance(inst.KSP, repoData.Manager,
-                                                           new Repository[] { repo }))
+                                                           new RepositoryDto[] { repo }))
             using (var output   = new MemoryStream())
             {
                 ICommand sut    = new List(repoData.Manager, user, output);

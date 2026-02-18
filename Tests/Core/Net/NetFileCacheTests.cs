@@ -243,7 +243,7 @@ namespace Tests.Core
 
         [TestCaseSource(nameof(HashCachingTestCases))]
         public void Store_ExternalDeletion_HashesPurged(string     zipPath,
-                                                        CkanModule module)
+                                                        ReleaseDto module)
         {
             // Arrange
             if (cache == null)
@@ -257,7 +257,7 @@ namespace Tests.Core
                 throw new Kraken("URL is null!");
             }
             var pathInCache = cache.Store(url, zipPath,
-                                          CkanModule.StandardName($"{module.identifier}-ExternalDeletionTest",
+                                          ReleaseDto.StandardName($"{module.identifier}-ExternalDeletionTest",
                                                                   module.version));
             // Calculate the hashes to populate the hash caches
             Assert.AreEqual(module.download_hash?.sha1,
@@ -291,7 +291,7 @@ namespace Tests.Core
 
         [TestCaseSource(nameof(HashCachingTestCases))]
         public void GetCachedFilename_FutureTimestamp_Deleted(string     zipPath,
-                                                              CkanModule module)
+                                                              ReleaseDto module)
         {
             // Arrange
             if (cache == null)
@@ -305,7 +305,7 @@ namespace Tests.Core
                 throw new Kraken("URL is null!");
             }
             var pathInCache = cache.Store(url, zipPath,
-                                          CkanModule.StandardName($"{module.identifier}-FutureTimestampTest",
+                                          ReleaseDto.StandardName($"{module.identifier}-FutureTimestampTest",
                                                                   module.version));
             // Calculate the hashes to populate the hash caches
             Assert.AreEqual(module.download_hash?.sha1,
@@ -353,7 +353,7 @@ namespace Tests.Core
                         TestData.DogeCoinFlagZip(),
                         TestData.ModuleManagerZip(),
                     },
-                    new CkanModule[]
+                    new ReleaseDto[]
                     {
                         TestData.DogeCoinFlag_101_LZMA_module,
                         TestData.DogeCoinFlag_101_module(),
@@ -364,7 +364,7 @@ namespace Tests.Core
 
         [TestCaseSource(nameof(HashReplacementTestCases))]
         public void GetCachedFilename_ReplaceZIP_HashesUpdated(string[]     zipPaths,
-                                                               CkanModule[] modules)
+                                                               ReleaseDto[] modules)
         {
             // Arrange
             if (cache == null)
@@ -378,9 +378,9 @@ namespace Tests.Core
             {
                 throw new Kraken("URL is null!");
             }
-            var nameInCache = CkanModule.StandardName($"{first.identifier}-FutureTimestampTest",
+            var nameInCache = ReleaseDto.StandardName($"{first.identifier}-FutureTimestampTest",
                                                       first.version);
-            foreach ((string zipPath, CkanModule module) in zipPaths.Zip(modules))
+            foreach ((string zipPath, ReleaseDto module) in zipPaths.Zip(modules))
             {
                 var pathInCache = cache.Store(url, zipPath, nameInCache);
                 Assert.AreEqual(module.download_hash?.sha1,

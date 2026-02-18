@@ -17,7 +17,7 @@ namespace Tests.Data
     /// </summary>
     public class TemporaryRepositoryData : IDisposable
     {
-        public TemporaryRepositoryData(IUser user, params Repository[] repos)
+        public TemporaryRepositoryData(IUser user, params RepositoryDto[] repos)
         {
             repoDataDir = TestData.NewTempDir();
             Manager = new RepositoryDataManager(repoDataDir);
@@ -30,12 +30,12 @@ namespace Tests.Data
             }
         }
 
-        public TemporaryRepositoryData(IUser user, IEnumerable<Repository> repos)
+        public TemporaryRepositoryData(IUser user, IEnumerable<RepositoryDto> repos)
             : this(user, repos.ToArray())
         {
         }
 
-        public TemporaryRepositoryData(IUser user, Dictionary<Repository, RepositoryData> reposAndData)
+        public TemporaryRepositoryData(IUser user, Dictionary<RepositoryDto, RepositoryData> reposAndData)
             : this(user)
         {
             foreach (var kvp in reposAndData)

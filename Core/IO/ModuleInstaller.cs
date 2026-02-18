@@ -43,9 +43,9 @@ namespace CKAN.IO
 
         public IUser User { get; set; }
 
-        public event Action<CkanModule, long, long>?      InstallProgress;
+        public event Action<ReleaseDto, long, long>?      InstallProgress;
         public event Action<InstalledModule, long, long>? RemoveProgress;
-        public event Action<CkanModule>?                  OneComplete;
+        public event Action<ReleaseDto>?                  OneComplete;
 
         #region Installation
 
@@ -57,14 +57,14 @@ namespace CKAN.IO
         /// Propagates a FileExistsKraken if we were going to overwrite a file.
         /// Propagates a CancelledActionKraken if the user cancelled the install.
         /// </summary>
-        public void InstallList(IReadOnlyCollection<CkanModule> modules,
+        public void InstallList(IReadOnlyCollection<ReleaseDto> modules,
                                 RelationshipResolverOptions     options,
                                 RegistryManager                 registry_manager,
                                 ref HashSet<string>?            possibleConfigOnlyDirs,
                                 InstalledFilesDeduplicator?     deduper       = null,
                                 string?                         userAgent     = null,
                                 IDownloader?                    downloader    = null,
-                                ISet<CkanModule>?               autoInstalled = null,
+                                ISet<ReleaseDto>?               autoInstalled = null,
                                 bool                            ConfirmPrompt = true)
         {
             if (modules.Count == 0)
@@ -89,8 +89,8 @@ namespace CKAN.IO
                                          installBytes,
                                          Properties.Resources.NotEnoughSpaceToInstall);
 
-            var cached    = new List<CkanModule>();
-            var downloads = new List<CkanModule>();
+            var cached    = new List<ReleaseDto>();
+            var downloads = new List<ReleaseDto>();
             User.RaiseMessage(Properties.Resources.ModuleInstallerAboutToInstall);
             User.RaiseMessage("");
             foreach (var module in modsToInstall)
@@ -110,7 +110,7 @@ namespace CKAN.IO
                 throw new CancelledActionKraken(Properties.Resources.ModuleInstallerUserDeclined);
             }
 
-            var downloadBytes = CkanModule.GroupByDownloads(downloads)
+            var downloadBytes = ReleaseDto.GroupByDownloads(downloads)
                                           .Sum(grp => grp.First().download_size);
             var rateCounter = new ByteRateCounter()
             {
@@ -173,9 +173,9 @@ namespace CKAN.IO
             User.RaiseProgress(Properties.Resources.ModuleInstallerDone, 100);
         }
 
-        private static IEnumerable<CkanModule> ModsInDependencyOrder(RelationshipResolver            resolver,
-                                                                     IReadOnlyCollection<CkanModule> cached,
-                                                                     IReadOnlyCollection<CkanModule> toDownload,
+        private static IEnumerable<ReleaseDto> ModsInDependencyOrder(RelationshipResolver            resolver,
+                                                                     IReadOnlyCollection<ReleaseDto> cached,
+                                                                     IReadOnlyCollection<ReleaseDto> toDownload,
                                                                      IDownloader?                    downloader)
 
             => ModsInDependencyOrder(resolver, cached,
@@ -183,12 +183,12 @@ namespace CKAN.IO
                                          ? downloader.ModulesAsTheyFinish(cached, toDownload)
                                          : null);
 
-        private static IEnumerable<CkanModule> ModsInDependencyOrder(RelationshipResolver            resolver,
-                                                                     IReadOnlyCollection<CkanModule> cached,
-                                                                     IEnumerable<CkanModule>?        downloading)
+        private static IEnumerable<ReleaseDto> ModsInDependencyOrder(RelationshipResolver            resolver,
+                                                                     IReadOnlyCollection<ReleaseDto> cached,
+                                                                     IEnumerable<ReleaseDto>?        downloading)
         {
-            var waiting = new HashSet<CkanModule>();
-            var done    = new HashSet<CkanModule>();
+            var waiting = new HashSet<ReleaseDto>();
+            var done    = new HashSet<ReleaseDto>();
             if (downloading != null)
             {
                 foreach (var newlyCached in downloading)
@@ -219,9 +219,9 @@ namespace CKAN.IO
             }
         }
 
-        private static IEnumerable<CkanModule> OnePass(RelationshipResolver resolver,
-                                                       HashSet<CkanModule>  waiting,
-                                                       HashSet<CkanModule>  done)
+        private static IEnumerable<ReleaseDto> OnePass(RelationshipResolver resolver,
+                                                       HashSet<ReleaseDto>  waiting,
+                                                       HashSet<ReleaseDto>  done)
         {
             while (true)
             {
@@ -255,7 +255,7 @@ namespace CKAN.IO
         ///
         /// TODO: The name of this and InstallModule() need to be made more distinctive.
         /// </summary>
-        private void Install(CkanModule                                         module,
+        private void Install(ReleaseDto                                         module,
                              bool                                               autoInstalled,
                              Registry                                           registry,
                              Dictionary<(string relPath, long size), string[]>? candidateDuplicates,
@@ -326,7 +326,7 @@ namespace CKAN.IO
         /// Check if the given module is a DLC:
         /// if it is, throws ModuleIsDLCKraken.
         /// </summary>
-        private static void CheckKindInstallationKraken(CkanModule module)
+        private static void CheckKindInstallationKraken(ReleaseDto module)
         {
             if (module.IsDLC)
             {
@@ -342,7 +342,7 @@ namespace CKAN.IO
         /// Propagates a CancelledActionKraken if the user decides not to overwite unowned files.
         /// Propagates a FileExistsKraken if we were going to overwrite a file.
         /// </summary>
-        private List<string> InstallModule(CkanModule                                         module,
+        private List<string> InstallModule(ReleaseDto                                         module,
                                            string?                                            zip_filename,
                                            Registry                                           registry,
                                            Dictionary<(string relPath, long size), string[]>? candidateDuplicates,
@@ -567,7 +567,7 @@ namespace CKAN.IO
         ///
         /// Throws a BadMetadataKraken if the stanza resulted in no files being returned.
         /// </summary>
-        public static IEnumerable<InstallableFile> FindInstallableFiles(CkanModule module,
+        public static IEnumerable<InstallableFile> FindInstallableFiles(ReleaseDto module,
                                                                         ZipFile    zipfile,
                                                                         IGame      game)
             // Use the provided stanzas, or use the default install stanza if they're absent.
@@ -583,7 +583,7 @@ namespace CKAN.IO
         ///
         /// If a KSP instance is provided, it will be used to generate output paths, otherwise these will be null.
         /// </summary>
-        public static IEnumerable<InstallableFile> FindInstallableFiles(CkanModule module,
+        public static IEnumerable<InstallableFile> FindInstallableFiles(ReleaseDto module,
                                                                         string     zip_filename,
                                                                         IGame      game)
         {
@@ -632,7 +632,7 @@ namespace CKAN.IO
         public static IEnumerable<(string path, bool dir, bool exists)> GetModuleContents(
                 NetModuleCache  Cache,
                 GameInstance    instance,
-                CkanModule      module,
+                ReleaseDto      module,
                 HashSet<string> filters)
             => (Cache.GetCachedFilename(module) is string filename
                     ? GetModuleContents(Utilities.DefaultIfThrows(
@@ -774,10 +774,10 @@ namespace CKAN.IO
                                   ref HashSet<string>?             possibleConfigOnlyDirs,
                                   RegistryManager                  registry_manager,
                                   bool                             ConfirmPrompt = true,
-                                  IReadOnlyCollection<CkanModule>? installing    = null)
+                                  IReadOnlyCollection<ReleaseDto>? installing    = null)
         {
             mods = mods.Memoize();
-            installing ??= Array.Empty<CkanModule>();
+            installing ??= Array.Empty<ReleaseDto>();
             // Pre-check, have they even asked for things which are installed?
 
             foreach (string mod in mods.Where(mod => registry_manager.registry.InstalledModule(mod) == null))
@@ -1174,8 +1174,8 @@ namespace CKAN.IO
         private void AddRemove(ref HashSet<string>?                 possibleConfigOnlyDirs,
                                RegistryManager                      registry_manager,
                                RelationshipResolver                 resolver,
-                               IReadOnlyCollection<CkanModule>      add,
-                               ISet<CkanModule>                     autoInstalled,
+                               IReadOnlyCollection<ReleaseDto>      add,
+                               ISet<ReleaseDto>                     autoInstalled,
                                IReadOnlyCollection<InstalledModule> remove,
                                IDownloader                          downloader,
                                bool                                 enforceConsistency,
@@ -1185,9 +1185,9 @@ namespace CKAN.IO
             {
                 var groups = add.GroupBy(m => m.IsMetapackage || cache.IsCached(m));
                 var cached = groups.FirstOrDefault(grp => grp.Key)?.ToArray()
-                                                                  ?? Array.Empty<CkanModule>();
+                                                                  ?? Array.Empty<ReleaseDto>();
                 var toDownload = groups.FirstOrDefault(grp => !grp.Key)?.ToArray()
-                                                                       ?? Array.Empty<CkanModule>();
+                                                                       ?? Array.Empty<ReleaseDto>();
 
                 long removeBytes     = remove.Sum(m => m.Module.install_size);
                 long removedBytes    = 0;
@@ -1274,12 +1274,12 @@ namespace CKAN.IO
         /// Will *re-install* or *downgrade* (with a warning) as well as upgrade.
         /// Throws ModuleNotFoundKraken if a module is not installed.
         /// </summary>
-        public void Upgrade(in IReadOnlyCollection<CkanModule> modules,
+        public void Upgrade(in IReadOnlyCollection<ReleaseDto> modules,
                             IDownloader                        downloader,
                             ref HashSet<string>?               possibleConfigOnlyDirs,
                             RegistryManager                    registry_manager,
                             InstalledFilesDeduplicator?        deduper            = null,
-                            ISet<CkanModule>?                  autoInstalled      = null,
+                            ISet<ReleaseDto>?                  autoInstalled      = null,
                             bool                               enforceConsistency = true,
                             bool                               ConfirmPrompt      = true)
         {
@@ -1295,7 +1295,7 @@ namespace CKAN.IO
             var resolver = new RelationshipResolver(
                 modules,
                 modules.Select(m => registry.InstalledModule(m.identifier)?.Module)
-                       .OfType<CkanModule>()
+                       .OfType<ReleaseDto>()
                        .Concat(autoRemoving.Select(im => im.Module)),
                 RelationshipResolverOptions.DependsOnlyOpts(instance.StabilityToleranceConfig),
                 registry,
@@ -1319,7 +1319,7 @@ namespace CKAN.IO
                                                          .Select(im => im.Module)
                                                          .Except(modules))
                                          .ToArray();
-            autoInstalled ??= new HashSet<CkanModule>();
+            autoInstalled ??= new HashSet<ReleaseDto>();
             autoInstalled.UnionWith(toInstall.Where(resolver.IsAutoInstalled));
 
             User.RaiseMessage(Properties.Resources.ModuleInstallerAboutToUpgrade);
@@ -1332,7 +1332,7 @@ namespace CKAN.IO
             var toRemove = new List<InstalledModule>();
 
             // Let's discover what we need to do with each module!
-            foreach (CkanModule module in toInstall)
+            foreach (ReleaseDto module in toInstall)
             {
                 var installed_mod = registry.InstalledModule(module.identifier);
 
@@ -1346,14 +1346,14 @@ namespace CKAN.IO
                             User.RaiseMessage(Properties.Resources.ModuleInstallerUpgradeInstallingResuming,
                                               module.name, module.version,
                                               string.Join(", ", PrioritizedHosts(config, module.download)),
-                                              CkanModule.FmtSize(module.download_size - inProgressFile.Length));
+                                              ReleaseDto.FmtSize(module.download_size - inProgressFile.Length));
                         }
                         else
                         {
                             User.RaiseMessage(Properties.Resources.ModuleInstallerUpgradeInstallingUncached,
                                               module.name, module.version,
                                               string.Join(", ", PrioritizedHosts(config, module.download)),
-                                              CkanModule.FmtSize(module.download_size));
+                                              ReleaseDto.FmtSize(module.download_size));
                         }
                     }
                     else
@@ -1367,7 +1367,7 @@ namespace CKAN.IO
                     // Module already installed. We'll need to remove it first.
                     toRemove.Add(installed_mod);
 
-                    CkanModule installed = installed_mod.Module;
+                    ReleaseDto installed = installed_mod.Module;
                     if (installed.version.Equals(module.version))
                     {
                         User.RaiseMessage(Properties.Resources.ModuleInstallerUpgradeReinstalling,
@@ -1388,14 +1388,14 @@ namespace CKAN.IO
                                 User.RaiseMessage(Properties.Resources.ModuleInstallerUpgradeUpgradingResuming,
                                                   module.name, installed.version, module.version,
                                                   string.Join(", ", PrioritizedHosts(config, module.download)),
-                                                  CkanModule.FmtSize(module.download_size - inProgressFile.Length));
+                                                  ReleaseDto.FmtSize(module.download_size - inProgressFile.Length));
                             }
                             else
                             {
                                 User.RaiseMessage(Properties.Resources.ModuleInstallerUpgradeUpgradingUncached,
                                                   module.name, installed.version, module.version,
                                                   string.Join(", ", PrioritizedHosts(config, module.download)),
-                                                  CkanModule.FmtSize(module.download_size));
+                                                  ReleaseDto.FmtSize(module.download_size));
                             }
                         }
                         else
@@ -1452,7 +1452,7 @@ namespace CKAN.IO
         {
             replacements = replacements.Memoize();
             log.Debug("Using Replace method");
-            var modsToInstall = new List<CkanModule>();
+            var modsToInstall = new List<ReleaseDto>();
             var modsToRemove  = new List<InstalledModule>();
             foreach (ModuleReplacement repl in replacements)
             {
@@ -1501,7 +1501,7 @@ namespace CKAN.IO
                         log.DebugFormat("It turns out {0} is already installed, we'll upgrade it.", installed_replacement.identifier);
                         modsToRemove.Add(installed_replacement);
 
-                        CkanModule installed = installed_replacement.Module;
+                        ReleaseDto installed = installed_replacement.Module;
                         if (installed.version.Equals(repl.ReplaceWith.version))
                         {
                             log.InfoFormat("{0} is already at the latest version, reinstalling to replace {1}", repl.ReplaceWith.identifier, repl.ToReplace.identifier);
@@ -1530,7 +1530,7 @@ namespace CKAN.IO
                       registry_manager,
                       resolver,
                       resolvedModsToInstall,
-                      new HashSet<CkanModule>(),
+                      new HashSet<ReleaseDto>(),
                       modsToRemove,
                       downloader,
                       enforceConsistency,
@@ -1565,14 +1565,14 @@ namespace CKAN.IO
         /// true if anything found, false otherwise
         /// </returns>
         public static bool FindRecommendations(GameInstance                                          instance,
-                                               IReadOnlyCollection<CkanModule>                       sourceModules,
-                                               IReadOnlyCollection<CkanModule>                       toInstall,
-                                               IReadOnlyCollection<CkanModule>                       toRemove,
-                                               IReadOnlyCollection<CkanModule>                       exclude,
+                                               IReadOnlyCollection<ReleaseDto>                       sourceModules,
+                                               IReadOnlyCollection<ReleaseDto>                       toInstall,
+                                               IReadOnlyCollection<ReleaseDto>                       toRemove,
+                                               IReadOnlyCollection<ReleaseDto>                       exclude,
                                                Registry                                              registry,
-                                               out Dictionary<CkanModule, Tuple<bool, List<string>>> recommendations,
-                                               out Dictionary<CkanModule, List<string>>              suggestions,
-                                               out Dictionary<CkanModule, HashSet<string>>           supporters)
+                                               out Dictionary<ReleaseDto, Tuple<bool, List<string>>> recommendations,
+                                               out Dictionary<ReleaseDto, List<string>>              suggestions,
+                                               out Dictionary<ReleaseDto, HashSet<string>>           supporters)
         {
             log.DebugFormat("Finding recommendations for: {0}", string.Join(", ", sourceModules));
             var crit     = instance.VersionCriteria();
@@ -1611,7 +1611,7 @@ namespace CKAN.IO
                                                                      .OfType<SelectionReason.Recommended>()
                                                                      .Where(r => recommenders.Contains(r.Parent))
                                                                      .Select(r => r.Parent)
-                                                                     .OfType<CkanModule>()
+                                                                     .OfType<ReleaseDto>()
                                                                      .Select(m => m.identifier)
                                                                      .ToList()));
             suggestions = resolver.Suggestions(recommenders,
@@ -1622,7 +1622,7 @@ namespace CKAN.IO
                                                              .OfType<SelectionReason.Suggested>()
                                                              .Where(r => recommenders.Contains(r.Parent))
                                                              .Select(r => r.Parent)
-                                                             .OfType<CkanModule>()
+                                                             .OfType<ReleaseDto>()
                                                              .Select(m => m.identifier)
                                                              .ToList());
 
@@ -1652,7 +1652,7 @@ namespace CKAN.IO
         /// <returns>
         /// True if it's possible to install these mods, false otherwise
         /// </returns>
-        public static bool CanInstall(IReadOnlyCollection<CkanModule> toInstall,
+        public static bool CanInstall(IReadOnlyCollection<ReleaseDto> toInstall,
                                       RelationshipResolverOptions     opts,
                                       IRegistryQuerier                registry,
                                       IGame                           game,
@@ -1662,7 +1662,7 @@ namespace CKAN.IO
             try
             {
                 var installed = toInstall.Select(m => registry.InstalledModule(m.identifier)?.Module)
-                                         .OfType<CkanModule>();
+                                         .OfType<ReleaseDto>();
                 var resolver = new RelationshipResolver(toInstall, installed, opts, registry, game, crit);
 
                 var resolverModList = resolver.ModList(false).ToArray();
@@ -1717,7 +1717,7 @@ namespace CKAN.IO
             }
         }
 
-        private void CheckAddRemoveFreeSpace(IEnumerable<CkanModule>      toInstall,
+        private void CheckAddRemoveFreeSpace(IEnumerable<ReleaseDto>      toInstall,
                                              IEnumerable<InstalledModule> toRemove)
         {
             if (toInstall.Sum(m => m.install_size) - toRemove.Sum(im => im.ActualInstallSize(instance))

@@ -49,9 +49,9 @@ namespace CKAN.GUI
             get => selectedModule;
         }
 
-        public event Action<CkanModule>? ModuleDoubleClicked;
+        public event Action<ReleaseDto>? ModuleDoubleClicked;
 
-        private void UpdateModDependencyGraph(CkanModule? module)
+        private void UpdateModDependencyGraph(ReleaseDto? module)
         {
             if (module != null)
             {
@@ -65,14 +65,14 @@ namespace CKAN.GUI
 
         private void DependsGraphTree_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node.Tag is CkanModule module)
+            if (e.Node.Tag is ReleaseDto module)
             {
                 ModuleDoubleClicked?.Invoke(module);
             }
         }
 
         private static bool ImMyOwnGrandpa(TreeNode node)
-            => node.Tag is CkanModule module
+            => node.Tag is ReleaseDto module
                && (node.Parent?.TraverseNodes(nd => nd.Parent)
                                .Any(other => other.Tag == module)
                               ?? false);
@@ -94,7 +94,7 @@ namespace CKAN.GUI
             UpdateModDependencyGraph(SelectedModule?.Module);
         }
 
-        private void _UpdateModDependencyGraph(CkanModule module)
+        private void _UpdateModDependencyGraph(ReleaseDto module)
         {
             if (Manager?.CurrentInstance != null)
             {
@@ -215,14 +215,14 @@ namespace CKAN.GUI
             // Skip children of nodes from circular dependencies
             // Tag is null for non-indexed nodes
             => !ImMyOwnGrandpa(node)
-               && node.Tag is CkanModule module
+               && node.Tag is ReleaseDto module
                && Manager?.CurrentInstance?.VersionCriteria() is GameVersionCriteria crit
                    ? ReverseRelationshipsCheckbox.CheckState == CheckState.Unchecked
                        ? ForwardRelationships(registry, module, stabilityTolerance, crit)
                        : ReverseRelationships(registry, module, stabilityTolerance, crit)
                    : Enumerable.Empty<TreeNode>();
 
-        private static IEnumerable<RelationshipDescriptor> GetModRelationships(CkanModule       module,
+        private static IEnumerable<RelationshipDescriptor> GetModRelationships(ReleaseDto       module,
                                                                                RelationshipType which)
             => which switch {
                 RelationshipType.Depends       => module.depends
@@ -239,7 +239,7 @@ namespace CKAN.GUI
             };
 
         private IEnumerable<TreeNode> ForwardRelationships(IRegistryQuerier         registry,
-                                                           CkanModule               module,
+                                                           ReleaseDto               module,
                                                            StabilityToleranceConfig stabilityTolerance,
                                                            GameVersionCriteria      crit)
             => (module.provides?.Select(ProvidedNode)
@@ -262,7 +262,7 @@ namespace CKAN.GUI
             var childNodes = relDescr.LatestAvailableWithProvides(
                                           registry, stabilityTolerance, crit,
                                           // Ignore conflicts with installed mods
-                                          new List<CkanModule>())
+                                          new List<ReleaseDto>())
                                      .Select(dep => IndexedNode(registry, dep, relationship, relDescr, stabilityTolerance, crit))
                                      .ToList();
 
@@ -271,7 +271,7 @@ namespace CKAN.GUI
                                     registry.InstalledDlls,
                                     // Maybe it's a DLC?
                                     registry.InstalledDlc,
-                                    out CkanModule? matched))
+                                    out ReleaseDto? matched))
             {
                 if (matched == null)
                 {
@@ -280,7 +280,7 @@ namespace CKAN.GUI
                 else
                 {
                     var newNode = IndexedNode(registry, matched, relationship, relDescr, stabilityTolerance, crit);
-                    if (childNodes.FindIndex(nd => (nd.Tag as CkanModule)?.identifier == matched.identifier)
+                    if (childNodes.FindIndex(nd => (nd.Tag as ReleaseDto)?.identifier == matched.identifier)
                         is int index && index != -1)
                     {
                         // Replace the latest provider with the installed version
@@ -300,7 +300,7 @@ namespace CKAN.GUI
             }
             else if (//childNodes is [var node and {Tag: CkanModule module}]
                      childNodes.Count == 1
-                     && childNodes[0] is var node and {Tag: CkanModule module}
+                     && childNodes[0] is var node and {Tag: ReleaseDto module}
                      && relDescr.ContainsAny(new string[] { module.identifier }))
             {
                 // Only one exact match module, return a simple node
@@ -315,14 +315,14 @@ namespace CKAN.GUI
         }
 
         private IEnumerable<TreeNode> ReverseRelationships(IRegistryQuerier         registry,
-                                                           CkanModule               module,
+                                                           ReleaseDto               module,
                                                            StabilityToleranceConfig stabilityTolerance,
                                                            GameVersionCriteria      crit)
-            => ReverseRelationships(registry, new CkanModule[] { module },
+            => ReverseRelationships(registry, new ReleaseDto[] { module },
                                     stabilityTolerance, crit);
 
         private IEnumerable<TreeNode> ReverseRelationships(IRegistryQuerier         registry,
-                                                           CkanModule[]             modules,
+                                                           ReleaseDto[]             modules,
                                                            StabilityToleranceConfig stabilityTolerance,
                                                            GameVersionCriteria      crit)
             => kindsOfRelationships.SelectMany(relationship =>
@@ -359,7 +359,7 @@ namespace CKAN.GUI
         }
 
         private TreeNode IndexedNode(IRegistryQuerier         registry,
-                                     CkanModule               module,
+                                     ReleaseDto               module,
                                      RelationshipType         relationship,
                                      RelationshipDescriptor   relDescr,
                                      StabilityToleranceConfig stabilityTolerance,

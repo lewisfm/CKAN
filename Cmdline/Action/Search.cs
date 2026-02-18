@@ -33,7 +33,7 @@ namespace CKAN.CmdLine
             }
 
             var matching_compatible = PerformSearch(instance, options.search_term, options.author_term, false);
-            var matching_incompatible = new List<CkanModule>();
+            var matching_incompatible = new List<ReleaseDto>();
             if (options.all)
             {
                 matching_incompatible = PerformSearch(instance, options.search_term, options.author_term, true);
@@ -79,7 +79,7 @@ namespace CKAN.CmdLine
             if (options.detail)
             {
                 user.RaiseMessage(Properties.Resources.SearchCompatibleModsHeader);
-                foreach (CkanModule mod in matching_compatible)
+                foreach (ReleaseDto mod in matching_compatible)
                 {
                     user.RaiseMessage(Properties.Resources.SearchCompatibleMod,
                                       mod.identifier,
@@ -92,9 +92,9 @@ namespace CKAN.CmdLine
                 if (matching_incompatible.Count != 0)
                 {
                     user.RaiseMessage(Properties.Resources.SearchIncompatibleModsHeader);
-                    foreach (CkanModule mod in matching_incompatible)
+                    foreach (ReleaseDto mod in matching_incompatible)
                     {
-                        CkanModule.GetMinMaxVersions(new List<CkanModule> { mod } , out _, out _, out var mininstance, out var maxinstance);
+                        ReleaseDto.GetMinMaxVersions(new List<ReleaseDto> { mod } , out _, out _, out var mininstance, out var maxinstance);
                         var gv = GameVersionRange.VersionSpan(instance.Game,
                                                               mininstance ?? GameVersion.Any,
                                                               maxinstance ?? GameVersion.Any)
@@ -115,7 +115,7 @@ namespace CKAN.CmdLine
                 var matching = matching_compatible.Concat(matching_incompatible)
                                                   .OrderBy(x => x.identifier)
                                                   .ToList();
-                foreach (CkanModule mod in matching)
+                foreach (ReleaseDto mod in matching)
                 {
                     user.RaiseMessage("{0}", mod.identifier);
                 }
@@ -133,14 +133,14 @@ namespace CKAN.CmdLine
         /// <param name="term">The search term. Case insensitive.</param>
         /// <param name="author">Name of author to find</param>
         /// <param name="searchIncompatible">True to look for incompatible modules, false (default) to look for compatible</param>
-        public List<CkanModule> PerformSearch(CKAN.GameInstance instance,
+        public List<ReleaseDto> PerformSearch(CKAN.GameInstance instance,
                                               string?           term,
                                               string?           author             = null,
                                               bool              searchIncompatible = false)
         {
             // Remove spaces and special characters from the search term.
-            term   = string.IsNullOrWhiteSpace(term)   ? "" : CkanModule.nonAlphaNums.Replace(term, "");
-            author = string.IsNullOrWhiteSpace(author) ? "" : CkanModule.nonAlphaNums.Replace(author, "");
+            term   = string.IsNullOrWhiteSpace(term)   ? "" : ReleaseDto.nonAlphaNums.Replace(term, "");
+            author = string.IsNullOrWhiteSpace(author) ? "" : ReleaseDto.nonAlphaNums.Replace(author, "");
 
             var registry = RegistryManager.Instance(instance, repoData).registry;
 
@@ -155,7 +155,7 @@ namespace CKAN.CmdLine
                     .ToList();
         }
 
-        public static bool TermMatchesModule(CkanModule module, string term, string author)
+        public static bool TermMatchesModule(ReleaseDto module, string term, string author)
             => (module.SearchableName.IndexOf(term, StringComparison.OrdinalIgnoreCase) > -1
                 || module.SearchableIdentifier.IndexOf(term, StringComparison.OrdinalIgnoreCase) > -1
                 || module.SearchableAbstract.IndexOf(term, StringComparison.OrdinalIgnoreCase) > -1
@@ -170,7 +170,7 @@ namespace CKAN.CmdLine
         /// <returns>
         /// The mod's properly capitalized identifier, or the original string if it doesn't exist
         /// </returns>
-        private static string CaseInsensitiveExactMatch(List<CkanModule> mods, string module)
+        private static string CaseInsensitiveExactMatch(List<ReleaseDto> mods, string module)
         {
             // Look for a matching mod with a case insensitive search
             var found = mods.FirstOrDefault(m => string.Equals(m.identifier,
@@ -193,7 +193,7 @@ namespace CKAN.CmdLine
             mods.AddRange(registry.IncompatibleModules(stabilityTolerance, instance.VersionCriteria()));
             for (int i = 0; i < modules.Count; ++i)
             {
-                Match match = CkanModule.idAndVersionMatcher.Match(modules[i]);
+                Match match = ReleaseDto.idAndVersionMatcher.Match(modules[i]);
                 if (match.Success)
                 {
                     // Handle name=version format

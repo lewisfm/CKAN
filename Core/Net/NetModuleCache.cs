@@ -47,8 +47,8 @@ namespace CKAN
             cache = new NetFileCache(path);
         }
 
-        public event Action<CkanModule>?  ModStored;
-        public event Action<CkanModule?>? ModPurged;
+        public event Action<ReleaseDto>?  ModStored;
+        public event Action<ReleaseDto?>? ModPurged;
 
         // Simple passthrough wrappers
         public void Dispose()
@@ -65,13 +65,13 @@ namespace CKAN
         {
             cache.MoveFrom(fromDir, progress);
         }
-        public bool IsCached(CkanModule m)
+        public bool IsCached(ReleaseDto m)
             => m.download?.Any(cache.IsCached)
                 ?? false;
-        public bool IsMaybeCachedZip(CkanModule m)
+        public bool IsMaybeCachedZip(ReleaseDto m)
             => m.download?.Any(dlUri => cache.IsMaybeCachedZip(dlUri, m.release_date))
                 ?? false;
-        public string? GetCachedFilename(CkanModule m)
+        public string? GetCachedFilename(ReleaseDto m)
             => m.download?.Select(dlUri => cache.GetCachedFilename(dlUri, m.release_date))
                           .FirstOrDefault(filename => filename != null);
         public void GetSizeInfo(out int numFiles, out long numBytes, out long? bytesFree)
@@ -87,25 +87,25 @@ namespace CKAN
             cache.CheckFreeSpace(bytesToStore);
         }
 
-        public FileInfo? GetInProgressFileName(CkanModule m)
+        public FileInfo? GetInProgressFileName(ReleaseDto m)
             => m.download == null
                 ? null
                 : cache.GetInProgressFileName(m.download, m.StandardName());
 
         private static string DescribeUncachedAvailability(IConfiguration config,
-                                                           CkanModule     m,
+                                                           ReleaseDto     m,
                                                            FileInfo?      fi)
             => (fi?.Exists ?? false)
                 ? string.Format(Properties.Resources.NetModuleCacheModuleResuming,
                     m.name, m.version,
                     string.Join(", ", ModuleInstaller.PrioritizedHosts(config, m.download)),
-                    CkanModule.FmtSize(m.download_size - fi.Length))
+                    ReleaseDto.FmtSize(m.download_size - fi.Length))
                 : string.Format(Properties.Resources.NetModuleCacheModuleHostSize,
                     m.name, m.version,
                     string.Join(", ", ModuleInstaller.PrioritizedHosts(config, m.download)),
-                    CkanModule.FmtSize(m.download_size));
+                    ReleaseDto.FmtSize(m.download_size));
 
-        public string DescribeAvailability(IConfiguration config, CkanModule m)
+        public string DescribeAvailability(IConfiguration config, ReleaseDto m)
             => m.IsMetapackage
                 ? string.Format(Properties.Resources.NetModuleCacheMetapackage, m.name, m.version)
                 : IsMaybeCachedZip(m)
@@ -150,7 +150,7 @@ namespace CKAN
         /// <returns>
         /// Name of the new file in the cache
         /// </returns>
-        public string Store(CkanModule         module,
+        public string Store(ReleaseDto         module,
                             string             path,
                             IProgress<long>?   progress,
                             string?            description = null,
@@ -304,7 +304,7 @@ namespace CKAN
         /// <returns>
         /// True if all purged, false otherwise
         /// </returns>
-        public bool Purge(CkanModule module)
+        public bool Purge(ReleaseDto module)
         {
             if (module.download != null
                 && cache.Remove(module.download))
@@ -315,7 +315,7 @@ namespace CKAN
             return false;
         }
 
-        public bool Purge(IReadOnlyCollection<CkanModule> modules)
+        public bool Purge(IReadOnlyCollection<ReleaseDto> modules)
         {
             if (modules.Select(m => cache.Remove(m.download ?? Enumerable.Empty<Uri>()))
                        .ToArray()

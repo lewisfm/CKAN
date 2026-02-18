@@ -50,22 +50,22 @@ namespace CKAN.ConsoleUI {
                 manager.CurrentInstance.StabilityToleranceConfig.Changed += StabilityToleranceConfig_Changed;
             }
 
-            moduleList = new ConsoleListBox<CkanModule>(
+            moduleList = new ConsoleListBox<ReleaseDto>(
                 1, 4, -1, -2,
                 GetAllMods(),
-                new List<ConsoleListBoxColumn<CkanModule>>() {
-                    new ConsoleListBoxColumn<CkanModule>(
+                new List<ConsoleListBoxColumn<ReleaseDto>>() {
+                    new ConsoleListBoxColumn<ReleaseDto>(
                         "", StatusSymbol, null, 1),
-                    new ConsoleListBoxColumn<CkanModule>(
+                    new ConsoleListBoxColumn<ReleaseDto>(
                         Properties.Resources.ModListNameHeader,
                         m => m.name ?? "",
                         null, null),
-                    new ConsoleListBoxColumn<CkanModule>(
+                    new ConsoleListBoxColumn<ReleaseDto>(
                         Properties.Resources.ModListVersionHeader,
                         m => m.version?.ToString(true, false) ?? "",
                         (a, b) => a.version.CompareTo(b.version),
                         10),
-                    new ConsoleListBoxColumn<CkanModule>(
+                    new ConsoleListBoxColumn<ReleaseDto>(
                         Properties.Resources.ModListMaxGameVersionHeader,
                         m => registry.LatestCompatibleGameVersion(game.KnownVersions, m.identifier)?.ToString() ?? "",
                         (a, b) => registry.LatestCompatibleGameVersion(game.KnownVersions, a.identifier) is GameVersion gvA
@@ -73,7 +73,7 @@ namespace CKAN.ConsoleUI {
                                    ? gvA.CompareTo(gvB)
                                    : 0,
                         20),
-                    new ConsoleListBoxColumn<CkanModule>(
+                    new ConsoleListBoxColumn<ReleaseDto>(
                         Properties.Resources.ModListDownloadsHeader,
                         m => repoData.GetDownloadCount(registry.Repositories.Values, m.identifier)
                                 is int i and > 0
@@ -91,7 +91,7 @@ namespace CKAN.ConsoleUI {
                             return true;
                         } else {
                             // Remove special characters from search term
-                            authorFilt = CkanModule.nonAlphaNums.Replace(authorFilt, "");
+                            authorFilt = ReleaseDto.nonAlphaNums.Replace(authorFilt, "");
                             return m.SearchableAuthors.Any((author) => author.IndexOf(authorFilt, StringComparison.CurrentCultureIgnoreCase) == 0);
                         }
                     // Other special search params: installed, updatable, new, conflicting and dependends
@@ -135,7 +135,7 @@ namespace CKAN.ConsoleUI {
 
                         return false;
                     } else {
-                        filter = CkanModule.nonAlphaNums.Replace(filter, "");
+                        filter = ReleaseDto.nonAlphaNums.Replace(filter, "");
 
                         return m.SearchableIdentifier.IndexOf( filter, StringComparison.CurrentCultureIgnoreCase) >= 0
                             || m.SearchableName.IndexOf(       filter, StringComparison.CurrentCultureIgnoreCase) >= 0
@@ -161,7 +161,7 @@ namespace CKAN.ConsoleUI {
             // Show total download size of all installed mods
             AddObject(new ConsoleLabel(
                 1, 3, searchWidth,
-                () => string.Format(Properties.Resources.ModListSizeOnDisk, CkanModule.FmtSize(totalInstalledDownloadSize())),
+                () => string.Format(Properties.Resources.ModListSizeOnDisk, ReleaseDto.FmtSize(totalInstalledDownloadSize())),
                 null,
                 th => th.DimLabelFg));
 
@@ -276,7 +276,7 @@ namespace CKAN.ConsoleUI {
             );
             moduleList.AddBinding(Keys.F8, sender =>
             {
-                if (moduleList.Selection is CkanModule m)
+                if (moduleList.Selection is ReleaseDto m)
                 {
                     var im = registry.InstalledModule(m.identifier);
                     if (im != null && !m.IsDLC) {
@@ -464,12 +464,12 @@ namespace CKAN.ConsoleUI {
                     }
                 }
                 try {
-                    DependencyScreen ds = new DependencyScreen(theme, manager, manager.CurrentInstance, registry, userAgent, reinstall, new HashSet<CkanModule>(), debug);
+                    DependencyScreen ds = new DependencyScreen(theme, manager, manager.CurrentInstance, registry, userAgent, reinstall, new HashSet<ReleaseDto>(), debug);
                     if (ds.HaveOptions()) {
                         LaunchSubScreen(ds);
                         bool needRefresh = false;
                         // Copy the right ones into our real plan
-                        foreach (CkanModule mod in reinstall.Install) {
+                        foreach (ReleaseDto mod in reinstall.Install) {
                             if (!registry.IsInstalled(mod.identifier, false)) {
                                 plan.Install.Add(mod);
                                 needRefresh = true;
@@ -528,7 +528,7 @@ namespace CKAN.ConsoleUI {
                         ps.RaiseError("{0}", ex.Message + ex.StackTrace);
                     }
                     // Update recent with mods that were updated in this pass
-                    foreach (CkanModule mod in registry.CompatibleModules(manager.CurrentInstance.StabilityToleranceConfig,
+                    foreach (ReleaseDto mod in registry.CompatibleModules(manager.CurrentInstance.StabilityToleranceConfig,
                                                                           manager.CurrentInstance.VersionCriteria())) {
                         if (!availBefore.Contains(mod.identifier)) {
                             recent.Add(mod.identifier);
@@ -564,7 +564,7 @@ namespace CKAN.ConsoleUI {
         {
             if (manager.CurrentInstance != null)
             {
-                var prevRepos   = new SortedDictionary<string, Repository>(registry.Repositories);
+                var prevRepos   = new SortedDictionary<string, RepositoryDto>(registry.Repositories);
                 var prevVerCrit = manager.CurrentInstance.VersionCriteria();
                 LaunchSubScreen(new GameInstanceEditScreen(theme, manager, repoData, manager.CurrentInstance, userAgent));
                 if (!registry.Repositories.DictionaryEquals(prevRepos)) {
@@ -590,7 +590,7 @@ namespace CKAN.ConsoleUI {
             if (manager.CurrentInstance != null)
             {
                 var prevInst = manager.CurrentInstance;
-                var prevRepos = new SortedDictionary<string, Repository>(registry.Repositories);
+                var prevRepos = new SortedDictionary<string, RepositoryDto>(registry.Repositories);
                 var prevVerCrit = prevInst.VersionCriteria();
                 LaunchSubScreen(new GameInstanceListScreen(theme, manager, repoData, userAgent));
                 if (!prevInst.Equals(manager.CurrentInstance)) {
@@ -661,9 +661,9 @@ namespace CKAN.ConsoleUI {
             moduleList?.SetData(GetAllMods(true));
         }
 
-        private List<CkanModule>? allMods = null;
+        private List<ReleaseDto>? allMods = null;
 
-        private List<CkanModule> GetAllMods(bool force = false)
+        private List<ReleaseDto> GetAllMods(bool force = false)
         {
             if (manager.CurrentInstance != null)
             {
@@ -676,7 +676,7 @@ namespace CKAN.ConsoleUI {
                         UpdateRegistry(false);
                     }
                     var crit = manager.CurrentInstance.VersionCriteria();
-                    allMods = new List<CkanModule>(registry.CompatibleModules(stabilityTolerance, crit));
+                    allMods = new List<ReleaseDto>(registry.CompatibleModules(stabilityTolerance, crit));
                     foreach (InstalledModule im in registry.InstalledModules) {
                         var m = Utilities.DefaultIfThrows(() => registry.LatestAvailable(im.identifier, stabilityTolerance, crit));
                         if (m == null) {
@@ -689,7 +689,7 @@ namespace CKAN.ConsoleUI {
                 }
                 return allMods;
             }
-            return new List<CkanModule>();
+            return new List<ReleaseDto>();
         }
 
         private bool ExportInstalled()
@@ -731,8 +731,8 @@ namespace CKAN.ConsoleUI {
                                                                   rel.ExactMatch(regMgr.registry, stabilityTolerance, crit, installed, modules)
                                                                   // Otherwise look for incompatible
                                                                   ?? rel.ExactMatch(regMgr.registry, stabilityTolerance, null, installed, modules))
-                                                              .OfType<CkanModule>()
-                                                             ?? Enumerable.Empty<CkanModule>())));
+                                                              .OfType<ReleaseDto>()
+                                                             ?? Enumerable.Empty<ReleaseDto>())));
                     LaunchSubScreen(new InstallScreen(theme, manager, repoData, userAgent, cp, debug));
                     RefreshList();
                 }
@@ -766,9 +766,9 @@ namespace CKAN.ConsoleUI {
         /// <returns>
         /// String containing symbol to use
         /// </returns>
-        public string StatusSymbol(CkanModule m)
+        public string StatusSymbol(ReleaseDto m)
             => StatusSymbol(plan.GetModStatus(manager, registry, m.identifier,
-                                              upgradeableGroups?[true] ?? new List<CkanModule>()));
+                                              upgradeableGroups?[true] ?? new List<ReleaseDto>()));
 
         /// <summary>
         /// Return the symbol to use to represent a mod's StatusSymbol.
@@ -812,12 +812,12 @@ namespace CKAN.ConsoleUI {
         private readonly string?                             userAgent;
         private          Registry                            registry;
         private readonly RepositoryDataManager               repoData;
-        private          Dictionary<bool, List<CkanModule>>? upgradeableGroups;
+        private          Dictionary<bool, List<ReleaseDto>>? upgradeableGroups;
         private readonly bool                                debug;
         private          TimeSpan                            timeSinceUpdate = TimeSpan.Zero;
 
         private readonly ConsoleField               searchBox;
-        private readonly ConsoleListBox<CkanModule> moduleList;
+        private readonly ConsoleListBox<ReleaseDto> moduleList;
 
         private readonly ChangePlan      plan   = new ChangePlan();
         private readonly HashSet<string> recent = new HashSet<string>();
@@ -858,7 +858,7 @@ namespace CKAN.ConsoleUI {
         /// Add or remove a mod from the remove list
         /// </summary>
         /// <param name="mod">The mod to add or remove</param>
-        public void ToggleRemove(CkanModule mod)
+        public void ToggleRemove(ReleaseDto mod)
         {
             Install.Remove(mod);
             Upgrade.Remove(mod.identifier);
@@ -869,7 +869,7 @@ namespace CKAN.ConsoleUI {
         /// Add or remove a mod from the install list
         /// </summary>
         /// <param name="mod">The mod to add or remove</param>
-        public void ToggleInstall(CkanModule mod)
+        public void ToggleInstall(ReleaseDto mod)
         {
             Upgrade.Remove(mod.identifier);
             Remove.Remove(mod.identifier);
@@ -880,7 +880,7 @@ namespace CKAN.ConsoleUI {
         /// Add or remove a mod from the upgrade list
         /// </summary>
         /// <param name="mod">The mod to add or remove</param>
-        public void ToggleUpgrade(CkanModule mod)
+        public void ToggleUpgrade(ReleaseDto mod)
         {
             Install.Remove(mod);
             Remove.Remove(mod.identifier);
@@ -931,7 +931,7 @@ namespace CKAN.ConsoleUI {
         public InstallStatus GetModStatus(GameInstanceManager manager,
                                           IRegistryQuerier registry,
                                           string identifier,
-                                          List<CkanModule> upgradeable)
+                                          List<ReleaseDto> upgradeable)
         {
             if (manager.CurrentInstance != null
                 && registry.IsInstalled(identifier, false)) {
@@ -959,7 +959,7 @@ namespace CKAN.ConsoleUI {
                     return InstallStatus.Installed;
                 }
             } else {
-                foreach (CkanModule m in Install)
+                foreach (ReleaseDto m in Install)
                 {
                     if (m.identifier == identifier)
                     {
@@ -1009,7 +1009,7 @@ namespace CKAN.ConsoleUI {
         /// </summary>
         /// <param name="list">HashSet to manipulate</param>
         /// <param name="mod">The value</param>
-        public static void toggleContains(HashSet<CkanModule> list, CkanModule mod)
+        public static void toggleContains(HashSet<ReleaseDto> list, ReleaseDto mod)
         {
             if (list != null && mod != null) {
                 if (!list.Remove(mod))
@@ -1022,7 +1022,7 @@ namespace CKAN.ConsoleUI {
         /// <summary>
         /// Mods we're planning to install
         /// </summary>
-        public readonly HashSet<CkanModule> Install = new HashSet<CkanModule>();
+        public readonly HashSet<ReleaseDto> Install = new HashSet<ReleaseDto>();
 
         /// <summary>
         /// Mods we're planning to upgrade

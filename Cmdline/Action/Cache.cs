@@ -206,7 +206,7 @@ namespace CKAN.CmdLine
         {
             if (manager?.Configuration.CacheSizeLimit is long limit)
             {
-                user.RaiseMessage("{0}", CkanModule.FmtSize(limit));
+                user.RaiseMessage("{0}", ReleaseDto.FmtSize(limit));
             }
             else
             {
@@ -242,14 +242,14 @@ namespace CKAN.CmdLine
                 {
                     user.RaiseMessage(Properties.Resources.CacheInfo,
                                       fileCount,
-                                      CkanModule.FmtSize(bytes),
-                                      CkanModule.FmtSize(bytesFree.Value));
+                                      ReleaseDto.FmtSize(bytes),
+                                      ReleaseDto.FmtSize(bytesFree.Value));
                 }
                 else
                 {
                     user.RaiseMessage(Properties.Resources.CacheInfoFreeSpaceUnknown,
                                       fileCount,
-                                      CkanModule.FmtSize(bytes));
+                                      ReleaseDto.FmtSize(bytes));
                 }
             }
         }
